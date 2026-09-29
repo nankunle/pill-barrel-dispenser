@@ -107,7 +107,7 @@ pre{background:#f6f8f8;border:1px solid var(--line);border-radius:8px;padding:8p
       <h3>现在这台机器在做什么</h3>
       <div id="stateLine" style="font-weight:700;color:var(--teal)">空闲，三根药管都关着</div>
       <table id="cnt"></table>
-      <p class="hint">按“出 1 片”：这一管的筒底、圆片上的孔、前方出药口是同一个直径。控制板把这一档转到前面，药片从同尺寸的口掉进浅盘。右上角是摄像头看到的浅盘。</p>
+      <p class="hint">按“出 1 片”：药片先掉进筛药板上和筒底一样大的孔，孔下面是实心底板，所以先停住。圆片再把这个孔转到前缘外面，药片从筛孔里掉进浅盘。右上角镜头对着盘里的药。</p>
     </section>
     <section class="card">
       <h3>点中的零件 <span>标签贴在零件上，不飘在空中</span></h3>
@@ -126,15 +126,25 @@ pre{background:#f6f8f8;border:1px solid var(--line);border-radius:8px;padding:8p
     <p>每一根药管下面只有两层活动件，都躺在底板上，用螺丝当轴，舵机只负责拨转，不托药柱的重量。</p>
     <ol class="steps">
       <li><b>第一层，一半开一半关。</b>圆片沿直径切掉一半。实心那一半转到药管正下方，药柱就停住。管口只占大约 40°，再转大约 130° 空的一边就让开，最底下那一片才能掉下去。不必转到 180° 去顶舵机限位。这是开关，不负责“量一片”。</li>
-      <li><b>第二层是四个大小不同的孔，药筒底口和其中一档一样大。</b>孔径 6.5、8.0、9.5、11.0 mm。控制板给每根管选定一档，这根药筒的内径就做成这一档：A 底口 6.5 mm，B 8.0 mm，C 11.0 mm。圆片把同一个直径的孔转到筒底下面，两个口重合，药片才下得去。比底口大的片进不了这根管。</li>
-      <li><b>出药口和药筒底口是同一个直径。</b>A 是 6.5 mm，B 是 8.0 mm，C 是 11.0 mm，也就是控制板为这根管选定的那一档。第二层再转 46°，这个孔对准前方出药口，药片垂直掉进浅盘。</li>
+      <li><b>第二层是筛药板，四个孔大小不同。</b>6.5、8.0、9.5、11.0 mm。药筒底口做成这一管选定的那一档：A 6.5、B 8.0、C 11.0，和圆片上对准筒底的孔是同一个圆。药片必须从这个小孔穿过去。比孔大的片进不了管，也穿不过这块板。</li>
+      <li><b>底板前缘在轴心前方 15 mm，前缘不再开孔。</b>筛药板比底板再向前伸出。选中的孔转到前缘外面，孔下面没有板，药片才从筛孔里掉进浅盘。拿掉筛药板，打开闸板，药片只落在实心底板上，到不了浅盘，大小也没有人管。</li>
     </ol>
     <div class="warnbox">6.5 / 8.0 / 9.5 / 11.0 mm 是演示用的四档。下单前用卡尺量真正的圆片，选不小于片径、又最接近的那一档。药筒内径要做成和这一档相同，不要再放大 1～2 mm，否则大小筛选就没有了。</div>
   </section>
 
   <section class="card">
     <h3>电路怎么接</h3>
-    <p class="hint">电脑、开发板、舵机电源是三路。摄像头是普通 USB 免驱摄像头，插在已有电脑上，不接到 ESP32。六只舵机不要从开发板的 5V 脚取电。</p>
+    <p class="hint">线都走木底板后沿，用扎带每隔大约 4 cm 捆一次，不要悬在药管中间。摄像头的 USB 单独去笔记本，不并进这束线。六只舵机不要从开发板的 5V 脚取电。</p>
+    <ol class="steps">
+      <li><b>共地，黑线。</b>适配器负极 → PCA9685 的 GND → ESP32 的 GND。这三处是同一根地。少接一处，舵机会乱转。</li>
+      <li><b>舵机电源，红线。</b>适配器 5V → 1000µF/16V 电容正极 → PCA9685 的 V+。电容负极接到上一步的地。这根红线不要碰到 ESP32 的 5V 或 3V3。</li>
+      <li><b>逻辑电源，橙线。</b>ESP32 丝印 <code>3V3</code> → PCA9685 的 <code>VCC</code>。VCC 和 V+ 是两个端子，接反了芯片会坏。</li>
+      <li><b>I2C。</b>绿线：ESP32 <code>GPIO8</code> → PCA9685 <code>SDA</code>。黄线：<code>GPIO9</code> → <code>SCL</code>。丝印若不是 8 和 9，以板上的 SDA、SCL 为准，避开 GPIO0、GPIO3、GPIO45、GPIO46。</li>
+      <li><b>OE。</b>PCA9685 的 OE 用一根短黑线接到旁边的 GND。不接的话，有的板子上电后六路都没有脉宽，闸板泄力。</li>
+      <li><b>舵机三根线插在同一路排针上。</b>橙或黄是信号，对着 PWM；红是 5V，对着 V+；棕是地，对着 GND。通道 0 是 A 闸板，1 是 A 筛药板，2 是 B 闸板，3 是 B 筛药板，4 是 C 闸板，5 是 C 筛药板。一次只让一只转动。</li>
+      <li><b>蜂鸣器、灯、按键。</b>有源蜂鸣器红线 GPIO4、黑线 GND。LED 长脚经 330Ω 接 GPIO5，短脚 GND。按键一脚 GPIO6，另一脚 GND。</li>
+      <li><b>摄像头。</b>绿联 CM925 的 USB 插笔记本电脑另一个口。不要拆开改接到 ESP32。</li>
+    </ol>
     <div class="wire">
       <svg viewBox="0 0 760 250">
         <rect x="8" y="16" width="120" height="70" rx="6" fill="#fff" stroke="#0f766e"/>
@@ -195,11 +205,11 @@ pre{background:#f6f8f8;border:1px solid var(--line);border-radius:8px;padding:8p
     <div id="l2mod"></div>
     <p>出一片时程序按这个顺序做，做完一步再做下一步，不要六只一起转：</p>
     <ol class="steps">
-      <li>第二层先停在这一档“孔在药管正下方”的角度。上电默认就是这个角度，不要停在出药孔上。</li>
+      <li>第二层先停在这一档“孔在药管正下方”的角度。上电默认就是这个角度，不要停在前缘外面。</li>
       <li>第一层从“关”转到“开”（大约再转 130°）。管口在圆心处只占大约 40°，半圆片转 130° 已经让开，不必顶到 180° 的限位。</li>
       <li>等大约 0.4 秒，一片落入第二层的孔，孔下面是实心底板。</li>
       <li>第一层转回“关”，并一直保持这个脉宽。药柱重新压在实心半圆上。</li>
-      <li>第二层再转 46°，这一档的孔对准前方出药口。出药口和药筒底口是同一个直径，药片从这里垂直掉进浅盘。</li>
+      <li>第二层再转 46°，这一档的孔转到前缘外面。药片从筛药板的孔里掉进浅盘。前缘没有第二个孔。</li>
       <li>第二层转回第 1 步的角度。通道不要清零。</li>
     </ol>
     <pre id="l2code"></pre>
@@ -212,11 +222,11 @@ pre{background:#f6f8f8;border:1px solid var(--line);border-radius:8px;padding:8p
       <li>用卡尺量圆片的直径和厚度，各量 5 片取最大的那个。三张第二层圆片切成一样的四孔。每根药筒的内径等于这根管要用的那一档，演示是 A 6.5、B 8.0、C 11.0 mm，和圆片上对准筒底的孔是同一个直径。</li>
       <li>把下面这张尺寸交给淘宝“亚克力激光切割”，备注用 3 mm 透明板做闸板和底板，四孔圆片用 5 mm 板，三张切成完全一样。底板用 5 mm 多层板或 5 mm 亚克力，自己钻四个脚的安装孔即可。</li>
       <li>底板四角装 30 mm 尼龙柱当脚，板下只走电源线。六只舵机用耳朵上的螺丝平拧在底板正面，出轴朝上，摇臂指向圆片。闸板比凹槽盘高，所以第一层的拨销更长，销子插进圆片边缘的孔。</li>
-      <li>铺上 3 mm 出药底板，四角用短柱垫高到第二层圆片刚好贴着它转。出药孔和轴孔按表钻，不要钻在药管正下方。</li>
+      <li>铺上 3 mm 出药底板，四角用短柱垫高到第二层圆片刚好贴着它转。只钻三根轴的孔，前缘和药管正下方都不要开孔。</li>
       <li>M3 螺丝从下往上穿出当轴。第二层整圆片套上，加一片薄垫片，再套第一层半圆片，上面用防松螺母，留出能转动的间隙，不要拧死。</li>
-      <li>两只舵机都平放在木底板后部，出轴朝上，摇臂拨销插进圆片边缘的孔。手拧时确认：半圆片从挡住到让开大约 130°，两端都还没顶到舵机壳里的限位；四孔圆片能把四档里任意一档转到药管下，再转大约 46° 到出药孔。同一时刻只有一个孔对着药管。</li>
+      <li>两只舵机都平放在木底板后部，出轴朝上，摇臂拨销插进圆片边缘的孔。手拧时确认：半圆片从挡住到让开大约 130°，两端都还没顶到舵机壳里的限位；四孔圆片能把四档里任意一档转到药管下，再转大约 46° 到前缘外面。同一时刻只有一个孔对着药管。</li>
       <li>四根长柱支起压管板。药管从压管板的孔里插到底，管口离第一层约 1 mm，用热熔胶在压管板上固定。管不能悬空，也不能压住圆片。</li>
-      <li>浅盘用螺丝固定在木底板前缘，三个出药口要落在浅盘正上方。不要再加导舌或滑道，药片是从出药口直接掉下去的。</li>
+      <li>浅盘用螺丝固定在底板前缘外面，筛药板伸出的那一段要落在浅盘上方。不要再加导舌或滑道。</li>
       <li>摄像头用一根铝角条拧在浅盘正前方，镜头平视盘里，不要朝药管。USB 线沿支架贴着底板走到电脑。</li>
       <li>开发板和 PCA9685 用短尼龙柱拧在底板后部。线都贴着底板走，用扎带固定，不要悬在药管中间。</li>
       <li>空载试转。再各放 5 片。第一层关闭时摇管子，药片不得漏。打开时应只掉进凹槽一片。转凹槽时上面的药柱应停在第一层上。</li>
@@ -224,12 +234,12 @@ pre{background:#f6f8f8;border:1px solid var(--line);border-radius:8px;padding:8p
     <p><b>交给激光切割的尺寸（单位 mm，原点在出药底板中心）</b></p>
     <table>
       <tr><th>零件</th><th>尺寸</th><th>孔</th></tr>
-      <tr><td>出药底板</td><td>220 × 100 × 3</td><td>三根轴：x = -70, 0, 70，孔直径 3.2。出药口在每根轴正前方 20.5 mm，直径和这一管的筒底相同：A 6.5，B 8.0，C 11.0。药管在出药口偏后 46°，正下方不要钻孔</td></tr>
+      <tr><td>出药底板</td><td>220 × 100 × 3</td><td>三根轴：x = -70, 0, 70，孔直径 3.2。前缘切在轴心前方 15 mm，前缘不要开出药孔。药管在正前方偏后 46°，正下方不要钻孔。筛药板直径 59，会比前缘再伸出大约 15 mm</td></tr>
       <tr><td>第一层闸板 ×3</td><td>直径 61，厚 2，只要半圆</td><td>圆心 M3 轴孔；圆弧边缘再钻直径 1.5 的拨销孔。半圆要盖住整个管口</td></tr>
       <tr><td>第二层四孔圆片 ×3</td><td>直径 59，厚 5</td><td>三张一样。孔心距圆心 20.5 mm，落在 114° 的弧上，相邻差 38°，直径依次 6.5、8.0、9.5、11.0。不要绕圆心均布，180° 舵机转不到</td></tr>
       <tr><td>压管板</td><td>220 × 80 × 3</td><td>三孔，孔距 70，孔径 = 对应管子外径 + 0.4</td></tr>
       <tr><td>药管</td><td>长 150，壁厚约 1.2</td><td>内径等于这一管选定的孔径，不是片径加松量。演示：A 内径 6.5，B 8.0，C 11.0。片径是 6.0 / 7.4 / 10.0</td></tr>
-      <tr><td>浅盘</td><td>内腔约 180 × 50，壁高 15</td><td>后沿伸到三个出药口正下方，药片垂直落进盘里</td></tr>
+      <tr><td>浅盘</td><td>内腔约 180 × 55，壁高 12</td><td>后沿伸到前缘正下方，筛药板伸出的孔落在盘上方</td></tr>
     </table>
   </section>
 
@@ -266,15 +276,15 @@ $('bomSum').innerHTML = `合计 <b>${sum}</b> 元，低于 500 元，还剩 ${50
 const PARTS = {
   tube:'药筒。内径和这根管选定的孔一样大：A 6.5 mm，B 8.0 mm，C 11.0 mm。底口对准圆片上的同尺寸孔，两个圆重合。比这个口大的药片进不去。',
   l1:'第一层半圆闸板。实心半边在药管下就是关。管口只占大约 40°，转到开大约再转 130°，不用顶到舵机 180° 的限位。销子拨边缘，舵机不托药柱。',
-  l2:'第二层圆片。四个孔在 114° 的弧上：6.5、8.0、9.5、11.0 mm。对准药筒的那一个孔，直径和筒底内径相同。开发板按片径选这一档。',
-  bed:'出药底板。每根管正前方的出药口，和这根药筒的底口、圆片上选定的孔是同一个直径：A 6.5 mm，B 8.0 mm，C 11.0 mm。药管正下方没有孔。',
+  l2:'筛药板。四个孔 6.5、8.0、9.5、11.0 mm，对准药筒的那个孔和筒底一样大。药片卡在这个孔里，随圆片转到前缘外面，再从孔里掉下去。没有这块板，药片到不了浅盘。',
+  bed:'出药底板。前缘在轴心前方 15 mm，前缘没有出药孔。药管正下方是实心的，托住掉进筛孔的那一片。筛药板转到前缘以外，孔下面才是空的。',
   servo:'MG90S，180° 角度款。橙线是 3.3V 信号，红线只接 V+，棕线接 GND。一次只转一只，转完保持脉宽。',
-  cup:'浅盘，螺丝固定在木底板前缘，就在三个出药孔前面。壁高大约 15 mm，手从前面拿。',
+  cup:'浅盘，放在底板前缘外面。筛药板把孔转到前缘外，药片从孔里掉进盘里。壁高大约 12 mm，手从前面拿。',
   cam:'绿联 CM925，支架拧在浅盘正前方，镜头平视盘里已经掉出来的药片。USB 去电脑，不接开发板。',
   mcu:'ESP32-S3。USB 接电脑。程序里分两段：闸板只开关，第二层按四档选角度。3V3、GND、GPIO8、GPIO9 去 PCA9685。不要从这块板给舵机供电。',
   drv:'PCA9685。VCC 接 3.3V，所以信号是 3.3V。V+ 接 5V 5A。OE 接 GND，输出才一直有效，闸板才能保持“关”。和开发板共地。',
   pwr:'5V 5A 适配器放在机器外面，只进端子台。',
-  chute:'出药口正下方就是浅盘。药片垂直掉下来，没有导舌。',
+  chute:'浅盘在前缘外面。药片从筛药板的孔里垂直掉下来，没有导舌。',
 };
 
 const MOTION = {
@@ -296,7 +306,7 @@ function l1FromDisc(yaw){ return MOTION.l1Closed + yaw*180/Math.PI; }
 (function renderControl(){
   const rows = MOTION.holeMm.map((mm,i)=>`<tr><td>${mm.toFixed(1)}</td><td>${i*MOTION.holeStepDeg}°</td><td>${homeDeg(i)}°</td><td>${pulseUs(homeDeg(i))} µs</td><td>${exitServoDeg(i)}°</td><td>${pulseUs(exitServoDeg(i))} µs</td></tr>`).join('');
   const box = document.getElementById('l2mod');
-  if(box) box.innerHTML = `<table><tr><th>孔径</th><th>在圆片上</th><th>停在药管下</th><th>脉宽</th><th>转到出药孔</th><th>脉宽</th></tr>${rows}</table><p class="hint">50 Hz。大约 500 µs 对应 0°，2500 µs 对应 180°。PCA9685 每格大约 4.88 µs，程序里把微秒除以 4.88 得到计数值。上表全部落在 10°–170°，两端留余量。</p><p class="hint">第一层：关 ${MOTION.l1Closed}°（${pulseUs(MOTION.l1Closed)} µs），开 ${MOTION.l1Open}°（${pulseUs(MOTION.l1Open)} µs）。</p>`;
+  if(box) box.innerHTML = `<table><tr><th>孔径</th><th>在圆片上</th><th>停在药管下</th><th>脉宽</th><th>转到前缘外</th><th>脉宽</th></tr>${rows}</table><p class="hint">50 Hz。大约 500 µs 对应 0°，2500 µs 对应 180°。PCA9685 每格大约 4.88 µs，程序里把微秒除以 4.88 得到计数值。上表全部落在 10°–170°，两端留余量。</p><p class="hint">第一层：关 ${MOTION.l1Closed}°（${pulseUs(MOTION.l1Closed)} µs），开 ${MOTION.l1Open}°（${pulseUs(MOTION.l1Open)} µs）。</p>`;
   const code = document.getElementById('l2code');
   if(code) code.textContent =
 `int pickHole(float pillMm) {              // 第二层控制：选档
@@ -349,8 +359,8 @@ scene.add(new THREE.AmbientLight(0xffffff,0.75));
 const sun=new THREE.DirectionalLight(0xffffff,1.15);
 sun.position.set(16,30,12); scene.add(sun);
 scene.add(new THREE.DirectionalLight(0xdde7ff,0.35)).position.set(-12,8,-10);
-const trayLight=new THREE.PointLight(0xfff6ea,1.1,22);
-trayLight.position.set(0,4.5,10); scene.add(trayLight);
+const trayLight=new THREE.PointLight(0xfff6ea,1.4,16);
+trayLight.position.set(0,3.1,5.2); scene.add(trayLight);
 
 const mat={
   wood:new THREE.MeshStandardMaterial({color:0xc4a574,roughness:.8}),
@@ -434,17 +444,15 @@ base.position.set(0,1.5,-2.2); machine.add(base);
 });
 
 const bedShape=new THREE.Shape();
-bedShape.moveTo(-11,-5); bedShape.lineTo(11,-5); bedShape.lineTo(11,5); bedShape.lineTo(-11,5); bedShape.closePath();
+bedShape.moveTo(-11,0); bedShape.lineTo(11,0); bedShape.lineTo(11,5); bedShape.lineTo(-11,5); bedShape.closePath();
 for(const id of ['A','B','C']){
   const spec=SPEC[id];
   const axle=new THREE.Path(); axle.absarc(spec.x,1.5,0.16,0,Math.PI*2,true); bedShape.holes.push(axle);
-  const ez=AXLE_Z+TUBE_R;
-  const hole=new THREE.Path(); hole.absarc(spec.x,-ez,HOLES[spec.hole].r,0,Math.PI*2,true); bedShape.holes.push(hole);
 }
 const bed=new THREE.Mesh(extrude(bedShape,0.3), mat.bed);
 bed.position.y=3.7; machine.add(bed);
 tag(bed,'bed');
-[[-10,-4],[10,-4],[-10,3],[10,3]].forEach(([x,z])=>{
+[[-10,-4],[10,-4],[-10,-0.4],[10,-0.4]].forEach(([x,z])=>{
   const p=cyl(0.28,1.7,mat.alum); p.position.set(x,2.85,z); machine.add(p);
 });
 
@@ -553,23 +561,23 @@ function spanBox(a,b,width,thick,material,part){
   machine.add(mesh);
   return mesh;
 }
-const trayFloor=new THREE.Mesh(new THREE.BoxGeometry(22,0.16,5.2), mat.cup);
-trayFloor.position.set(0,2.08,1.55); machine.add(trayFloor); tag(trayFloor,'cup');
-const trayFront=new THREE.Mesh(new THREE.BoxGeometry(22,0.55,0.18), mat.cup);
-trayFront.position.set(0,2.35,4.1); machine.add(trayFront);
-const trayLeft=new THREE.Mesh(new THREE.BoxGeometry(0.18,1.25,5.2), mat.cup);
-trayLeft.position.set(-11,2.7,1.55); machine.add(trayLeft);
+const trayFloor=new THREE.Mesh(new THREE.BoxGeometry(22,0.16,5.6), mat.cup);
+trayFloor.position.set(0,2.08,2.5); machine.add(trayFloor); tag(trayFloor,'cup');
+const trayFront=new THREE.Mesh(new THREE.BoxGeometry(22,0.7,0.18), mat.cup);
+trayFront.position.set(0,2.43,5.2); machine.add(trayFront);
+const trayLeft=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.7,5.6), mat.cup);
+trayLeft.position.set(-11,2.43,2.5); machine.add(trayLeft);
 const trayRight=trayLeft.clone(); trayRight.position.x=11; machine.add(trayRight);
 
-const camPost=new THREE.Mesh(new THREE.BoxGeometry(0.35,2.4,0.35), mat.alum);
-camPost.position.set(-9,2.5,8.4); machine.add(camPost);
-spanBox(new THREE.Vector3(-9,3.6,8.4), new THREE.Vector3(0,3.6,8.4), 0.32, 0.28, mat.alum);
+const camPost=new THREE.Mesh(new THREE.BoxGeometry(0.35,3.4,0.35), mat.alum);
+camPost.position.set(-8,2.7,8.6); machine.add(camPost);
+spanBox(new THREE.Vector3(-8,4.5,8.6), new THREE.Vector3(0,4.5,8.6), 0.28, 0.22, mat.alum);
 const cam=new THREE.Mesh(new THREE.BoxGeometry(1.8,0.7,1.3), mat.dark);
-cam.position.set(0,3.6,8.4); cam.lookAt(0,2.3,0.5); machine.add(cam); tag(cam,'cam');
-const camEye=new THREE.PerspectiveCamera(78,480/280,0.2,40);
-camEye.position.set(0,3.45,8.5);
+cam.position.set(0,4.2,7.6); cam.lookAt(0,2.3,1.0); machine.add(cam); tag(cam,'cam');
+const camEye=new THREE.PerspectiveCamera(58,480/280,0.2,40);
+camEye.position.set(0,4.4,8.2);
 camEye.up.set(0,1,0);
-camEye.lookAt(0,2.3,0.4);
+camEye.lookAt(0,2.3,1.0);
 cam.layers.set(1);
 camera.layers.enable(1);
 const camCable=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,6,8), new THREE.MeshStandardMaterial({color:0x6d28d9}));
@@ -583,9 +591,35 @@ drv.position.set(-4.2,2.5,-9.5); machine.add(drv); tag(drv,'drv');
   const p=cyl(0.18,0.45,mat.alum); p.position.set(x,2.12,z); machine.add(p);
 });
 const cap=cyl(0.45,1.1,mat.dark); cap.position.set(-8.6,2.55,-9.4); machine.add(cap);
-for(let i=0;i<4;i++){
-  const w=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,8.2,6), mat.orange);
-  w.rotation.z=Math.PI/2; w.position.set(0.2,2.4,-8.15-i*0.16); machine.add(w);
+function lead(ax,ay,az,bx,by,bz,color,r){
+  const a=new THREE.Vector3(ax,ay,az), b=new THREE.Vector3(bx,by,bz);
+  const len=a.distanceTo(b);
+  if(len<0.02) return;
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(r||0.035,r||0.035,len,6), new THREE.MeshStandardMaterial({color,roughness:.55}));
+  m.position.copy(a).add(b).multiplyScalar(0.5);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), b.clone().sub(a).normalize());
+  machine.add(m);
+}
+function run(pts,color,r){
+  for(let i=0;i<pts.length-1;i++) lead(pts[i][0],pts[i][1],pts[i][2],pts[i+1][0],pts[i+1][1],pts[i+1][2],color,r);
+}
+run([[14,1.7,-4.3],[14,2.12,-4.3],[14,2.12,-8.7],[-7.3,2.12,-8.7],[-7.3,2.72,-9.1]], 0x1a1a1a, 0.045);
+run([[-7.1,2.72,-9.0],[-7.1,2.18,-8.5],[2.1,2.18,-8.5],[2.1,2.78,-8.9]], 0x1a1a1a, 0.04);
+run([[14.5,1.7,-3.7],[14.5,2.2,-3.7],[14.5,2.2,-9.3],[-8.6,2.2,-9.3],[-8.6,2.7,-8.5],[-6.4,2.75,-8.45]], 0xc0392b, 0.045);
+run([[3.4,2.85,-8.35],[3.4,2.28,-8.35],[-5.4,2.28,-8.35],[-5.4,2.78,-8.45]], 0xe67e22, 0.032);
+run([[4.2,2.85,-8.15],[4.2,2.22,-7.85],[-4.6,2.22,-7.85],[-4.6,2.78,-8.25]], 0x2f9d62, 0.03);
+run([[4.55,2.85,-8.15],[4.55,2.22,-7.65],[-4.2,2.22,-7.65],[-4.2,2.78,-8.15]], 0xe6c84a, 0.03);
+for(const id of ['A','B','C']){
+  const st=stations[id];
+  [st.s1,st.s2].forEach((servo,k)=>{
+    const p=new THREE.Vector3(0,0.35,-1.15); servo.localToWorld(p);
+    const cx=-6.5+MOTION.ch[id][k]*0.72;
+    const cols=[0xf0a020,0xc0392b,0x6b3a2a];
+    cols.forEach((col,w)=>{
+      const o=(w-1)*0.07;
+      run([[p.x+o,p.y,p.z],[p.x+o,2.1,p.z],[p.x+o,2.1,-7.7],[cx+o,2.1,-7.7],[cx+o,2.68,-8.35]], col, 0.026);
+    });
+  });
 }
 
 const brick=new THREE.Mesh(new THREE.BoxGeometry(4.2,2.2,2.4), mat.black);
@@ -602,7 +636,10 @@ const views={
   side:{p:[28,10,2],t:[0,5,0]},
   wire:{p:[8,16,-22],t:[2,3,-2]},
 };
-function setView(n){ const v=views[n]; camera.position.set(...v.p); controls.target.set(...v.t); controls.update(); }
+function setView(n){
+  const v=views[n]; camera.position.set(...v.p); controls.target.set(...v.t); controls.update();
+  if(n==='wire') sub('底板后沿的线：黑是共地，红是舵机 5V，橙是 3.3V，绿是 SDA，黄是 SCL。每只舵机三根线是橙信号、红 5V、棕地，插在同一路排针上。');
+}
 document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>setView(b.dataset.v));
 
 let explode=0;
@@ -752,24 +789,24 @@ async function dispense(id){
     await tweenYaw(st.l1, 0, 560);
     layoutStack(id);
     st.s1.userData.horn.rotation.y=l1FromDisc(0)*Math.PI/180;
-    sub(id+'：控制板把 '+HOLES[hi].mm.toFixed(1)+' mm 这档转到前方出药口，'+hd+'° → '+ed+'°');
-    log(id+' 第二层通道 '+MOTION.ch[id][1]+' 转到出药口 '+ed+'°（'+pulseUs(ed)+' µs）');
+    sub(id+'：筛药板上 '+HOLES[hi].mm.toFixed(1)+' mm 的孔转到前缘外面，孔下面没有底板了');
+    log(id+' 第二层通道 '+MOTION.ch[id][1]+' 转到前缘外 '+ed+'°（'+pulseUs(ed)+' µs）');
     await tweenYaw(st.l2, st.spec.rest+EXIT, 800);
     st.s2.userData.horn.rotation.y=l2FromDisc(st.spec.rest+EXIT)*Math.PI/180;
     scene.attach(pill);
     const ex=exitWorld(st);
-    sub(id+'：药片从出药口垂直掉进浅盘');
-    const land=new THREE.Vector3(ex.x, 2.22+st.spec.h/2, ex.z);
+    sub(id+'：药片从 '+HOLES[hi].mm.toFixed(1)+' mm 的筛孔里掉进浅盘');
+    const land=new THREE.Vector3(ex.x, 2.16+st.spec.h/2, ex.z);
     await Promise.all([
-      tweenCam(new THREE.Vector3(x+4, 7, ex.z+7), new THREE.Vector3(ex.x, 3, ex.z), 650),
+      tweenCam(new THREE.Vector3(0, 5.5, 11), new THREE.Vector3(0, 2.3, 1.2), 650),
       (async()=>{
-        await tweenObj(pill, new THREE.Vector3(ex.x, 3.15, ex.z), 260);
+        await tweenObj(pill, new THREE.Vector3(ex.x, 3.2, ex.z), 260);
         await tweenObj(pill, land, 340);
       })(),
     ]);
     state.cup.push({id,mesh:pill});
     $('camFeed').classList.add('hit');
-    sub('药片在浅盘里。右上角是摄像头看到的画面，药管里面它看不到');
+    sub('药片在浅盘里。右上角是摄像头看到的，镜头对着盘里的药，不是对着板子');
     log(id+' 已进浅盘，摄像头画面里能看到这一片');
     await sleep(900);
     await tweenYaw(st.l2, st.spec.rest, 480);
