@@ -30,8 +30,8 @@ canvas#c3d{width:100%;height:100%;display:block;touch-action:none}
 .btn.small{padding:3px 8px;font-size:12.5px}
 #sub{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);max-width:90%;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:6px;padding:4px 12px;font-size:13.5px;text-align:center;display:none;z-index:5}
 #sub.show{display:block}
-#camFeed{position:absolute;top:52px;right:10px;z-index:5;width:240px;border:2px solid #111;border-radius:8px;overflow:hidden;background:#111;box-shadow:0 8px 18px rgba(0,0,0,.2)}
-#camFeed canvas{width:100%;height:136px;display:block;background:#dfe8e4}
+#camFeed{position:absolute;top:52px;right:10px;z-index:5;width:300px;border:3px solid #111;border-radius:8px;overflow:hidden;background:#111;box-shadow:0 8px 18px rgba(0,0,0,.25)}
+#camFeed canvas{width:100%;height:175px;display:block;background:#f4f7f4}
 #camFeed p{margin:0;font-size:12px;line-height:1.35;color:#dfffea;background:#14241c;padding:4px 8px}
 #camFeed.hit{box-shadow:0 0 0 3px #0f766e}
 #panel{display:flex;flex-direction:column;gap:10px}
@@ -107,7 +107,7 @@ pre{background:#f6f8f8;border:1px solid var(--line);border-radius:8px;padding:8p
       <h3>现在这台机器在做什么</h3>
       <div id="stateLine" style="font-weight:700;color:var(--teal)">空闲，三根药管都关着</div>
       <table id="cnt"></table>
-      <p class="hint">按“出 1 片”会先把镜头推到圆片上方，拆开看四个孔，再装回去出药。药片沿短导舌进浅盘后，右上角的摄像头画面里才会出现它。</p>
+      <p class="hint">按“出 1 片”：控制板先选定这一档，第二层把这个孔转到机器前面的出药口，药片从出药口直接落到浅盘。右上角是摄像头看到的浅盘。</p>
     </section>
     <section class="card">
       <h3>点中的零件 <span>标签贴在零件上，不飘在空中</span></h3>
@@ -127,7 +127,7 @@ pre{background:#f6f8f8;border:1px solid var(--line);border-radius:8px;padding:8p
     <ol class="steps">
       <li><b>第一层，一半开一半关。</b>圆片沿直径切掉一半。实心那一半转到药管正下方，药柱就停住。管口只占大约 40°，再转大约 130° 空的一边就让开，最底下那一片才能掉下去。不必转到 180° 去顶舵机限位。这是开关，不负责“量一片”。</li>
       <li><b>第二层是四个大小不同的孔。</b>直径 6.5、8.0、9.5、11.0 mm，孔心都离轴 20.5 mm，但只排在大约 114° 的一段弧上，相邻差 38°。MG90S 是角度舵机，有效行程大约 180°，四个孔如果绕一圈均布，再转到出药孔就会顶死在限位上。开发板里有一段专门的第二层程序：先选不小于片径、又最接近的那一档，再把对应脉宽发给这一管的通道。比 11 mm 还大就蜂鸣、舵机不动。</li>
-      <li><b>出药口就是底板前面的浅盘。</b>出药孔到浅盘只有大约 3 厘米：一片小导舌，后端拧在出药孔前面，前端落在浅盘里。没有长滑梯。浅盘敞口，手从前面直接拿。</li>
+      <li><b>出药口在每张圆片的正前方。</b>控制板让第二层再转 46°，选中的那个孔就对准底板上的出药口。药片从孔里垂直掉进下面的浅盘，不经过滑道。浅盘敞口，手从前面拿。</li>
     </ol>
     <div class="warnbox">6.5 / 8.0 / 9.5 / 11.0 mm 是演示用的四档孔径，不是已经标定的结果。下单前用卡尺量真正的圆片：选不小于片径、又最接近的那一档；四档都不够就不要切更大的孔来凑。药管内径 = 片径 + 1.5～2 mm。</div>
   </section>
@@ -199,7 +199,7 @@ pre{background:#f6f8f8;border:1px solid var(--line);border-radius:8px;padding:8p
       <li>第一层从“关”转到“开”（大约再转 130°）。管口在圆心处只占大约 40°，半圆片转 130° 已经让开，不必顶到 180° 的限位。</li>
       <li>等大约 0.4 秒，一片落入第二层的孔，孔下面是实心底板。</li>
       <li>第一层转回“关”，并一直保持这个脉宽。药柱重新压在实心半圆上。</li>
-      <li>第二层再转 46°，这一档的孔对准底板出药孔，药片沿短导舌进浅盘。</li>
+      <li>第二层再转 46°，这一档的孔对准前方出药口。药片从出药口垂直掉进浅盘。</li>
       <li>第二层转回第 1 步的角度。通道不要清零。</li>
     </ol>
     <pre id="l2code"></pre>
@@ -216,7 +216,7 @@ pre{background:#f6f8f8;border:1px solid var(--line);border-radius:8px;padding:8p
       <li>M3 螺丝从下往上穿出当轴。第二层整圆片套上，加一片薄垫片，再套第一层半圆片，上面用防松螺母，留出能转动的间隙，不要拧死。</li>
       <li>两只舵机都平放在木底板后部，出轴朝上，摇臂拨销插进圆片边缘的孔。手拧时确认：半圆片从挡住到让开大约 130°，两端都还没顶到舵机壳里的限位；四孔圆片能把四档里任意一档转到药管下，再转大约 46° 到出药孔。同一时刻只有一个孔对着药管。</li>
       <li>四根长柱支起压管板。药管从压管板的孔里插到底，管口离第一层约 1 mm，用热熔胶在压管板上固定。管不能悬空，也不能压住圆片。</li>
-      <li>出药孔正前方各接一条约 30 mm 的小导舌，用两颗 M3 拧在出药底板上，低的那头直接伸进浅盘。浅盘用螺丝固定在木底板前缘，不要再往前做长滑道。</li>
+      <li>浅盘用螺丝固定在木底板前缘，三个出药口要落在浅盘正上方。不要再加导舌或滑道，药片是从出药口直接掉下去的。</li>
       <li>摄像头用一根铝角条拧在浅盘左前方，镜头朝下看到整个浅盘。USB 线沿支架贴着底板走到电脑。</li>
       <li>开发板和 PCA9685 用短尼龙柱拧在底板后部。线都贴着底板走，用扎带固定，不要悬在药管中间。</li>
       <li>空载试转。再各放 5 片。第一层关闭时摇管子，药片不得漏。打开时应只掉进凹槽一片。转凹槽时上面的药柱应停在第一层上。</li>
@@ -224,12 +224,12 @@ pre{background:#f6f8f8;border:1px solid var(--line);border-radius:8px;padding:8p
     <p><b>交给激光切割的尺寸（单位 mm，原点在出药底板中心）</b></p>
     <table>
       <tr><th>零件</th><th>尺寸</th><th>孔</th></tr>
-      <tr><td>出药底板</td><td>220 × 100 × 3</td><td>三根轴：x = -70, 0, 70，孔直径 3.2。出药孔在轴心沿转向 46°、半径 20.5 mm 处，直径 14，只比最大一档 11 mm 略大</td></tr>
+      <tr><td>出药底板</td><td>220 × 100 × 3</td><td>三根轴：x = -70, 0, 70，孔直径 3.2。出药口在每根轴的正前方 20.5 mm，直径 14。药管在出药口偏后 46° 的位置，正下方不要钻孔</td></tr>
       <tr><td>第一层闸板 ×3</td><td>直径 61，厚 2，只要半圆</td><td>圆心 M3 轴孔；圆弧边缘再钻直径 1.5 的拨销孔。半圆要盖住整个管口</td></tr>
       <tr><td>第二层四孔圆片 ×3</td><td>直径 59，厚 5</td><td>三张一样。孔心距圆心 20.5 mm，落在 114° 的弧上，相邻差 38°，直径依次 6.5、8.0、9.5、11.0。不要绕圆心均布，180° 舵机转不到</td></tr>
       <tr><td>压管板</td><td>220 × 80 × 3</td><td>三孔，孔距 70，孔径 = 对应管子外径 + 0.4</td></tr>
       <tr><td>药管</td><td>长 150</td><td>内径 = 片径 + 1.5～2。演示片径 6.0 / 7.4 / 10.0 mm，对应管内径大约 8 / 9.5 / 12 mm</td></tr>
-      <tr><td>导舌 ×3 + 浅盘</td><td>导舌每条约 30 × 18 × 2；浅盘内腔约 180 × 40，壁高 15</td><td>导舌高端两个 M3 孔，低端伸进浅盘，中间不悬空</td></tr>
+      <tr><td>浅盘</td><td>内腔约 180 × 50，壁高 15</td><td>后沿伸到三个出药口正下方，药片垂直落进盘里</td></tr>
     </table>
   </section>
 
@@ -267,14 +267,14 @@ const PARTS = {
   tube:'药管。下端插在压管板里，管口离闸板约 1 mm，药柱重量落在第一层实心半圆上，不悬空。',
   l1:'第一层半圆闸板。实心半边在药管下就是关。管口只占大约 40°，转到开大约再转 130°，不用顶到舵机 180° 的限位。销子拨边缘，舵机不托药柱。',
   l2:'第二层圆片。四个孔在 114° 的弧上：6.5、8.0、9.5、11.0 mm。开发板按片径选一档，经 PCA9685 把这一管的通道转到对应角度。孔下面是实心底板。',
-  bed:'出药底板。托住两层圆片。出药孔在转向大约 46° 的位置，直径 14 mm，比最大一档略大。药管正下方没有孔。',
+  bed:'出药底板。托住两层圆片。每管正前方有一个直径 14 mm 的出药口，药管正下方没有孔。控制板把选中的孔转到这个口上，药片才掉下去。',
   servo:'MG90S，180° 角度款。橙线是 3.3V 信号，红线只接 V+，棕线接 GND。一次只转一只，转完保持脉宽。',
   cup:'浅盘，螺丝固定在木底板前缘，就在三个出药孔前面。壁高大约 15 mm，手从前面拿。',
   cam:'绿联 CM925，支架拧在浅盘左前方，镜头看浅盘。USB 去电脑，不接开发板。',
   mcu:'ESP32-S3。USB 接电脑。程序里分两段：闸板只开关，第二层按四档选角度。3V3、GND、GPIO8、GPIO9 去 PCA9685。不要从这块板给舵机供电。',
   drv:'PCA9685。VCC 接 3.3V，所以信号是 3.3V。V+ 接 5V 5A。OE 接 GND，输出才一直有效，闸板才能保持“关”。和开发板共地。',
   pwr:'5V 5A 适配器放在机器外面，只进端子台。',
-  chute:'出药孔前面的短导舌，大约 3 厘米。高端固定在底板上，低端落在浅盘里，药片顺着它掉进去，不走长滑梯。',
+  chute:'出药口正下方就是浅盘。药片垂直掉下来，没有导舌。',
 };
 
 const MOTION = {
@@ -435,9 +435,8 @@ const bedShape=new THREE.Shape();
 bedShape.moveTo(-11,-5); bedShape.lineTo(11,-5); bedShape.lineTo(11,5); bedShape.lineTo(-11,5); bedShape.closePath();
 for(const x of [-7,0,7]){
   const axle=new THREE.Path(); axle.absarc(x,1.5,0.16,0,Math.PI*2,true); bedShape.holes.push(axle);
-  const ex=x+Math.sin(EXIT)*TUBE_R;
-  const ez=AXLE_Z+Math.cos(EXIT)*TUBE_R;
-  const hole=new THREE.Path(); hole.absarc(ex,-ez,0.70,0,Math.PI*2,true); bedShape.holes.push(hole);
+  const ez=AXLE_Z+TUBE_R;
+  const hole=new THREE.Path(); hole.absarc(x,-ez,0.72,0,Math.PI*2,true); bedShape.holes.push(hole);
 }
 const bed=new THREE.Mesh(extrude(bedShape,0.3), mat.bed);
 bed.position.y=3.7; machine.add(bed);
@@ -450,8 +449,10 @@ const holderShape=new THREE.Shape();
 holderShape.moveTo(-11,-3.2); holderShape.lineTo(11,-3.2); holderShape.lineTo(11,3.2); holderShape.lineTo(-11,3.2); holderShape.closePath();
 for(const id of ['A','B','C']){
   const spec=SPEC[id];
+  const tx=spec.x+Math.sin(-EXIT)*TUBE_R;
+  const tz=AXLE_Z+Math.cos(-EXIT)*TUBE_R;
   const h=new THREE.Path();
-  h.absarc(spec.x, -0.2, spec.d/2+0.28, 0, Math.PI*2, true);
+  h.absarc(tx, -tz, spec.d/2+0.28, 0, Math.PI*2, true);
   holderShape.holes.push(h);
 }
 const holder=new THREE.Mesh(extrude(holderShape,0.3), mat.bed);
@@ -479,6 +480,7 @@ for(const id of ['A','B','C']){
   const spec=SPEC[id];
   const root=new THREE.Group();
   root.position.set(spec.x,0,AXLE_Z);
+  root.rotation.y=-EXIT;
   machine.add(root);
   const axle=cyl(0.16,1.7,mat.metal); axle.position.y=4.15; root.add(axle);
   const l2=new THREE.Group(); l2.position.y=3.95; l2.rotation.y=spec.rest;
@@ -511,10 +513,21 @@ for(const id of ['A','B','C']){
   stations[id]={spec,root,l1,l2,s1,s2,pills,tubeR};
   layoutStack(id);
 }
+function tubeWorld(st){
+  const v=new THREE.Vector3(0,0,TUBE_R);
+  st.root.localToWorld(v);
+  return v;
+}
+function exitWorld(st){
+  const v=new THREE.Vector3(Math.sin(EXIT)*TUBE_R, 0, Math.cos(EXIT)*TUBE_R);
+  st.root.localToWorld(v);
+  return v;
+}
 function layoutStack(id){
   const st=stations[id];
+  const o=tubeWorld(st);
   st.pills.forEach((p,i)=>{
-    p.position.set(st.spec.x, 4.78+st.spec.h/2+i*(st.spec.h+0.03), AXLE_Z+TUBE_R);
+    p.position.set(o.x, 4.78+st.spec.h/2+i*(st.spec.h+0.03), o.z);
   });
 }
 
@@ -527,31 +540,23 @@ function spanBox(a,b,width,thick,material,part){
   machine.add(mesh);
   return mesh;
 }
-const trayFloor=new THREE.Mesh(new THREE.BoxGeometry(20,0.16,3.8), mat.cup);
-trayFloor.position.set(0,2.08,2.05); machine.add(trayFloor); tag(trayFloor,'cup');
-const trayFront=new THREE.Mesh(new THREE.BoxGeometry(20,1.25,0.18), mat.cup);
-trayFront.position.set(0,2.7,3.9); machine.add(trayFront);
-const trayLeft=new THREE.Mesh(new THREE.BoxGeometry(0.18,1.25,3.8), mat.cup);
-trayLeft.position.set(-10,2.7,2.05); machine.add(trayLeft);
-const trayRight=trayLeft.clone(); trayRight.position.x=10; machine.add(trayRight);
-for(const id of ['A','B','C']){
-  const x=SPEC[id].x;
-  const hi=new THREE.Vector3(x+Math.sin(EXIT)*TUBE_R, 3.62, AXLE_Z+Math.cos(EXIT)*TUBE_R);
-  const lo=new THREE.Vector3(x+0.4, 2.28, 0.85);
-  spanBox(hi, lo, 1.5, 0.12, mat.slide, 'chute');
-  spanBox(hi.clone().add(new THREE.Vector3(-0.7,0.15,0)), lo.clone().add(new THREE.Vector3(-0.7,0.35,0)), 0.12, 0.4, mat.alum);
-  spanBox(hi.clone().add(new THREE.Vector3(0.7,0.15,0)), lo.clone().add(new THREE.Vector3(0.7,0.35,0)), 0.12, 0.4, mat.alum);
-}
+const trayFloor=new THREE.Mesh(new THREE.BoxGeometry(22,0.16,5.2), mat.cup);
+trayFloor.position.set(0,2.08,1.55); machine.add(trayFloor); tag(trayFloor,'cup');
+const trayFront=new THREE.Mesh(new THREE.BoxGeometry(22,1.25,0.18), mat.cup);
+trayFront.position.set(0,2.7,4.1); machine.add(trayFront);
+const trayLeft=new THREE.Mesh(new THREE.BoxGeometry(0.18,1.25,5.2), mat.cup);
+trayLeft.position.set(-11,2.7,1.55); machine.add(trayLeft);
+const trayRight=trayLeft.clone(); trayRight.position.x=11; machine.add(trayRight);
 
-const camPost=new THREE.Mesh(new THREE.BoxGeometry(0.35,6.3,0.35), mat.alum);
-camPost.position.set(-11,5.05,6.3); machine.add(camPost);
-spanBox(new THREE.Vector3(-11,8.15,6.3), new THREE.Vector3(0,8.15,8.6), 0.35, 0.28, mat.alum);
-const cam=new THREE.Mesh(new THREE.BoxGeometry(1.4,0.9,2.4), mat.dark);
-cam.position.set(0,8.2,8.6); cam.lookAt(0,2.15,1.6); machine.add(cam); tag(cam,'cam');
-const camEye=new THREE.PerspectiveCamera(52,240/136,0.05,40);
-const camAim=new THREE.Vector3(0,2.15,1.6);
-camEye.position.copy(cam.position).add(camAim.clone().sub(cam.position).normalize().multiplyScalar(2.4));
-camEye.lookAt(camAim);
+const camPost=new THREE.Mesh(new THREE.BoxGeometry(0.35,8.6,0.35), mat.alum);
+camPost.position.set(-11,6.2,4.6); machine.add(camPost);
+spanBox(new THREE.Vector3(-11,10.4,4.6), new THREE.Vector3(0,10.4,2.2), 0.32, 0.28, mat.alum);
+const cam=new THREE.Mesh(new THREE.BoxGeometry(1.8,0.7,1.3), mat.dark);
+cam.position.set(0,10.15,2.2); cam.lookAt(0,2,2.2); machine.add(cam); tag(cam,'cam');
+const camEye=new THREE.PerspectiveCamera(96,480/280,0.2,30);
+camEye.position.set(0,8.6,1.2);
+camEye.up.set(0,0,-1);
+camEye.lookAt(0,2.05,1.2);
 cam.layers.set(1);
 camera.layers.enable(1);
 const camCable=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,6,8), new THREE.MeshStandardMaterial({color:0x6d28d9}));
@@ -578,7 +583,7 @@ const usb=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,8,8), mat.blue);
 usb.rotation.z=Math.PI/2; usb.position.set(12,0.2,-1); scene.add(usb);
 
 const views={
-  iso:{p:[26,20,26],t:[0,6,0]},
+  iso:{p:[16,14,18],t:[0,4,0]},
   front:{p:[0,8,16],t:[0,4,1]},
   top:{p:[0,24,7],t:[0,4,-1]},
   side:{p:[28,10,2],t:[0,5,0]},
@@ -711,11 +716,11 @@ async function dispense(id){
   const x=st.spec.x;
   const hi=st.spec.hole, hd=homeDeg(hi), ed=exitServoDeg(hi);
   try{
-    await tweenCam(new THREE.Vector3(x+1.2, 9, 8), new THREE.Vector3(x, 4.6, AXLE_Z), 650);
+    await tweenCam(new THREE.Vector3(x, 12, AXLE_Z+6), new THREE.Vector3(x, 4.3, AXLE_Z), 650);
     sub(id+' 管：先拆开。第二层四个孔是 6.5、8.0、9.5、11.0 mm，这一管对准 '+HOLES[hi].mm.toFixed(1)+' mm');
     log(id+' 第二层通道 '+MOTION.ch[id][1]+'：选 '+HOLES[hi].mm.toFixed(1)+' mm 档，舵机先停在 '+hd+'°（'+pulseUs(hd)+' µs）');
     await tweenExplode(0.8, 500);
-    await sleep(2200);
+    await sleep(1600);
     sub('装回去。闸板盖住药管，摄像头这时还看不到药片');
     await tweenExplode(0, 450);
     const pill=st.pills.shift();
@@ -734,18 +739,20 @@ async function dispense(id){
     await tweenYaw(st.l1, 0, 560);
     layoutStack(id);
     st.s1.userData.horn.rotation.y=l1FromDisc(0)*Math.PI/180;
-    sub(id+'：第二层把这个孔转到出药孔，'+hd+'° → '+ed+'°');
-    log(id+' 第二层转到出药孔 '+ed+'°（'+pulseUs(ed)+' µs）');
+    sub(id+'：控制板把 '+HOLES[hi].mm.toFixed(1)+' mm 这档转到前方出药口，'+hd+'° → '+ed+'°');
+    log(id+' 第二层通道 '+MOTION.ch[id][1]+' 转到出药口 '+ed+'°（'+pulseUs(ed)+' µs）');
     await tweenYaw(st.l2, st.spec.rest+EXIT, 800);
     st.s2.userData.horn.rotation.y=l2FromDisc(st.spec.rest+EXIT)*Math.PI/180;
     scene.attach(pill);
-    sub(id+'：出药孔到浅盘大约 3 厘米，药片顺着导舌掉下去');
-    const slot=state.cup.length;
-    const drop=new THREE.Vector3(x+Math.sin(EXIT)*TUBE_R, 3.35, AXLE_Z+Math.cos(EXIT)*TUBE_R+0.15);
-    const land=new THREE.Vector3(x+(slot%2?0.5:-0.3), 2.22+st.spec.h/2, 1.5+(slot%3)*0.45);
+    const ex=exitWorld(st);
+    sub(id+'：药片从出药口垂直掉进浅盘');
+    const land=new THREE.Vector3(ex.x, 2.22+st.spec.h/2, ex.z);
     await Promise.all([
-      tweenCam(new THREE.Vector3(x-3, 8, 12), new THREE.Vector3(x, 2.4, 2), 700),
-      (async()=>{ await tweenObj(pill, drop, 220); await tweenObj(pill, land, 380); })(),
+      tweenCam(new THREE.Vector3(x+4, 7, ex.z+7), new THREE.Vector3(ex.x, 3, ex.z), 650),
+      (async()=>{
+        await tweenObj(pill, new THREE.Vector3(ex.x, 3.15, ex.z), 260);
+        await tweenObj(pill, land, 340);
+      })(),
     ]);
     state.cup.push({id,mesh:pill});
     $('camFeed').classList.add('hit');
@@ -813,20 +820,33 @@ canvas.addEventListener('pointerup',e=>{
 });
 
 const camCanvas=$('cam2d');
-const camRenderer=new THREE.WebGLRenderer({canvas:camCanvas,antialias:true});
-camRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const RT_W=480, RT_H=280;
+camCanvas.width=RT_W; camCanvas.height=RT_H;
+const camTarget=new THREE.WebGLRenderTarget(RT_W, RT_H);
+const camCtx=camCanvas.getContext('2d',{alpha:false});
+const camPix=new Uint8Array(RT_W*RT_H*4);
+const camImg=camCtx.createImageData(RT_W, RT_H);
+function blitCam(){
+  renderer.setRenderTarget(camTarget);
+  renderer.clear();
+  renderer.render(scene, camEye);
+  renderer.readRenderTargetPixels(camTarget, 0, 0, RT_W, RT_H, camPix);
+  renderer.setRenderTarget(null);
+  const row=RT_W*4;
+  for(let y=0;y<RT_H;y++) camImg.data.set(camPix.subarray((RT_H-1-y)*row, (RT_H-y)*row), y*row);
+  camCtx.putImageData(camImg, 0, 0);
+}
 function resize(){
   const w=canvas.clientWidth||canvas.parentElement.clientWidth, h=canvas.clientHeight||canvas.parentElement.clientHeight;
   renderer.setSize(w,h,false); camera.aspect=w/Math.max(h,1); camera.updateProjectionMatrix();
-  const cw=camCanvas.clientWidth||240, ch=camCanvas.clientHeight||136;
-  camRenderer.setSize(cw,ch,false); camEye.aspect=cw/Math.max(ch,1); camEye.updateProjectionMatrix();
 }
 addEventListener('resize',resize);
 function loop(){
   requestAnimationFrame(loop);
   if(!scripted) controls.update();
+  renderer.setRenderTarget(null);
   renderer.render(scene,camera);
-  camRenderer.render(scene,camEye);
+  blitCam();
 }
 resize(); loop(); setView('iso'); counts();
 log('模型已按可拼装的结构摆好：药管插在板上，两层圆片躺在底板上，药杯放在桌上。');
