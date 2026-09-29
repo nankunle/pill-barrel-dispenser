@@ -3,1736 +3,669 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>五瓶智能分药与取药提醒系统 · 结构概念演示</title>
+<title>三管两层分药机 · 可拼装指南</title>
 <script type="importmap">
 { "imports": { "three": "./libs/three.module.js", "three/addons/": "./libs/" } }
 </script>
 <style>
-:root{
-  --bg:#f2f5f6; --panel:#ffffff; --ink:#2b3a42; --sub:#5b6f79;
-  --teal:#0d9488; --teal-soft:#e0f2ef; --blue:#2563eb; --amber:#b45309;
-  --red:#dc2626; --line:#dbe4e8; --chip:#eef3f5;
-}
-*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-html,body{margin:0; padding:0;}
-body{background:var(--bg); color:var(--ink);
-  font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;
-  font-size:15px; line-height:1.55;}
-header{padding:10px 16px; border-bottom:1px solid var(--line); background:var(--panel);
-  display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
-header h1{font-size:17px; margin:0; color:var(--teal);}
-header .hb{font-size:12px; color:var(--sub); border:1px solid var(--line);
-  border-radius:4px; padding:1px 8px; background:#f8fafb;}
-header .hb.warn{color:var(--amber); border-color:#f0d9b8; background:#fdf6ec;}
-#layout{display:grid; grid-template-columns:minmax(0,2fr) minmax(300px,1fr); gap:10px; padding:10px;height:calc(100vh - 46px - 168px); min-height:480px;}
-#stage{position:relative; background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
-#canvasWrap{position:absolute; inset:0;}
-canvas#c3d{width:100%; height:100%; display:block; touch-action:none; outline:none;}
-#labels{position:absolute; inset:0; pointer-events:none; overflow:hidden;}
-.plabel{position:absolute; transform:translate(-50%,-100%); font-size:11px; white-space:nowrap;
-  background:rgba(255,255,255,.88); color:#334; border:1px solid var(--line); border-radius:4px;
-  padding:0 5px; pointer-events:none; line-height:1.5;}
-.plabel b{color:var(--teal);}
-#badge{position:absolute; top:10px; left:10px; z-index:5; background:var(--amber); color:#fff;
-  font-size:12px; border-radius:5px; padding:2px 10px; box-shadow:0 1px 4px rgba(0,0,0,.15);}
-#badge2{position:absolute; top:10px; left:150px; z-index:5; background:rgba(255,255,255,.9); color:var(--amber);
-  font-size:12px; border:1px solid #f0d9b8; border-radius:5px; padding:1px 8px; display:none;}
-#viewBar{position:absolute; top:38px; left:10px; right:10px; z-index:5; display:flex; flex-wrap:wrap; gap:5px;}
-#viewBar .grp{display:flex; gap:5px; flex-wrap:wrap; background:rgba(255,255,255,.72);
-  border:1px solid var(--line); border-radius:8px; padding:4px 6px;}
-#toolPanel{position:absolute; bottom:52px; left:10px; z-index:5; display:flex; flex-wrap:wrap; gap:8px; max-width:75%;}
-#toolPanel .grp{display:flex; gap:6px; align-items:center; background:rgba(255,255,255,.82);
-  border:1px solid var(--line); border-radius:8px; padding:5px 8px; font-size:12.5px; flex-wrap:wrap;}
-#toolPanel input[type=range]{width:110px;}
-#subtitle{position:absolute; bottom:6px; left:50%; transform:translateX(-50%); z-index:6; max-width:86%;
-  background:rgba(255,255,255,.92); border:1px solid var(--line); color:var(--ink);
-  font-size:13.5px; border-radius:6px; padding:3px 14px; text-align:center; display:none;}
-#subtitle.show{display:block;}
-#loader{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  background:#f2f5f6; z-index:9; font-size:14px; color:var(--sub);}
-#fallback2d{position:absolute; inset:0; display:none; z-index:8; background:#f8fafb;
-  flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:16px; text-align:center;}
-#fallback2d .err{color:var(--red); font-size:13px; max-width:560px;}
-#panel{overflow-y:auto; background:var(--bg); padding-right:4px; display:flex; flex-direction:column; gap:10px;}
-section.card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:10px 12px;}
-section.card>h3{margin:0 0 8px; font-size:14px; color:var(--teal); display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
-section.card>h3 .tag{font-size:11px; color:var(--sub); font-weight:normal;}
-.btn{border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:7px;
-  padding:6px 12px; font-size:13.5px; cursor:pointer; font-family:inherit;}
-.btn:hover:not(:disabled){border-color:var(--teal); color:var(--teal);}
-.btn:disabled{opacity:.45; cursor:not-allowed;}
-.btn.primary{background:var(--teal); border-color:var(--teal); color:#fff;}
-.btn.primary:hover:not(:disabled){background:#0b7f74; color:#fff;}
-.btn.warn{background:var(--amber); border-color:var(--amber); color:#fff;}
-.btn.danger{background:var(--red); border-color:var(--red); color:#fff;}
-.btn.small{padding:3px 8px; font-size:12.5px;}
-.btnrow{display:flex; flex-wrap:wrap; gap:6px; margin:6px 0;}
-.statebar{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
-.statechip{font-size:13px; border-radius:6px; padding:2px 10px; background:var(--chip); color:var(--sub);}
-.statechip b{color:var(--ink);}
-.statechip.on{background:var(--teal-soft); color:var(--teal); font-weight:bold;}
-.statechip.alert{background:#fdeaea; color:var(--red); font-weight:bold;}
-#stateText{font-size:15px; font-weight:bold; color:var(--teal); flex:1; min-width:140px;}
-#stateText.alert{color:var(--red);}
-.qgrid{display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:6px;}
-.qgrid label{font-size:12px; color:var(--sub); text-align:center; display:block;}
-.qgrid input{width:100%; padding:4px; border:1px solid var(--line); border-radius:6px; text-align:center; font-size:14px;}
-label.ck{font-size:12.5px; color:var(--sub); display:inline-flex; gap:4px; align-items:center; cursor:pointer;}
-label.ck input{accent-color:var(--teal);}
-table.tbl{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:6px;}
-table.tbl th, table.tbl td{border:1px solid var(--line); padding:3px 6px; text-align:center;}
-table.tbl th{background:var(--teal-soft); color:#0b6f66; font-weight:600;}
-table.tbl td.ok{color:var(--teal); font-weight:600;}
-table.tbl td.bad{color:var(--red); font-weight:600;}
-table.tbl td.mut{color:var(--sub);}
-#notifList{max-height:110px; overflow-y:auto; font-size:12.5px; list-style:none; margin:4px 0 0; padding:0;}
-#notifList li{border-left:3px solid var(--teal); background:#f7fbfa; margin:4px 0; padding:3px 8px; border-radius:3px;}
-#notifList li.warn{border-color:var(--amber); background:#fdf6ec;}
-#eventLog{height:150px; overflow-y:auto; background:var(--panel); border:1px solid var(--line);
-  border-radius:10px; padding:8px 12px; font-size:12.5px;}
-#eventLog .row{padding:1px 0; border-bottom:1px dashed #e8eef0;}
-#eventLog .t{color:#9bb; margin-right:6px; font-family:Consolas,monospace; font-size:11.5px;}
-#eventLog .c{color:var(--blue); margin-right:6px; font-family:Consolas,monospace; font-size:11.5px;}
-#eventLog .m.warn{ color:var(--amber); } #eventLog .m.bad{ color:var(--red); } #eventLog .m.ok{ color:var(--teal); }
-#tl{display:flex; gap:4px; flex-wrap:wrap; padding:6px 0 4px; align-items:center;}
-.tlc{font-size:12px; border:1px solid var(--line); background:var(--chip); color:var(--sub); padding:2px 9px; border-radius:11px;}
-.tlc.act{background:var(--teal); color:#fff; border-color:var(--teal); font-weight:bold;}
-.tlc.done{background:var(--teal-soft); color:var(--teal); border-color:#bfe3dc;}
-.tlc.skip{opacity:.45; text-decoration:line-through;}
-#flowSvg{width:100%; height:auto; margin-top:4px;}
-.legend{display:flex; gap:10px; flex-wrap:wrap; font-size:12px; color:var(--sub); margin-top:2px;}
-.legend i{display:inline-block; width:16px; height:4px; border-radius:2px; vertical-align:middle; margin-right:3px;}
-#cmdLog{max-height:90px; overflow-y:auto; font-size:12px; font-family:Consolas,monospace; margin-top:4px; white-space:nowrap;}
-#visionCv{width:100%; border:1px solid var(--line); border-radius:8px; background:#fbfdfd;}
-.hint{font-size:12px; color:var(--sub);}
-.hint.warn{color:var(--amber);}
-#partCard{display:none; border:2px solid var(--teal); background:#f5fbfa;}
-#partCard h4{margin:2px 0; font-size:14px;}
-#partCard .kv{font-size:12.5px; margin:2px 0;}
-#partCard .kv b{color:var(--sub); font-weight:600;}
-details.fold{margin-top:6px; border:1px dashed var(--line); border-radius:8px; padding:4px 8px; background:#fafcfd;}
-details.fold summary{cursor:pointer; font-size:13px; color:var(--sub);}
-footer{padding:8px 16px 12px;}
-.recording .dev-only{display:none !important;}
-.recording #subtitle{font-size:15px;}
-@media (max-width:980px){
-  #layout{grid-template-columns:1fr; height:auto;}
-  #stage{height:56vh; min-height:360px;}
-  #panel{overflow:visible;}
-  #toolPanel{max-width:92%; bottom:44px;}
-}
+:root{--bg:#eef2f1;--panel:#fff;--ink:#243036;--sub:#5c6e76;--teal:#0f766e;--line:#d5e0e2;--amber:#9a6700;--red:#b42318;}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;font-size:15px;line-height:1.55}
+header{padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;color:var(--teal)}
+.hb{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:1px 8px;color:var(--sub);background:#f7faf9}
+.hb.warn{color:var(--amber);background:#fff8eb;border-color:#f0dfb4}
+#layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:10px;padding:10px}
+#stage{position:relative;height:72vh;min-height:460px;background:#f7f8f6;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+#canvasWrap{position:absolute;inset:0}
+canvas#c3d{width:100%;height:100%;display:block;touch-action:none}
+#viewBar,#toolPanel{position:absolute;z-index:4;display:flex;flex-wrap:wrap;gap:6px}
+#viewBar{top:10px;left:10px;right:10px}
+#toolPanel{left:10px;bottom:10px;max-width:96%}
+.grp{display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:13px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 10px;font:inherit;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--teal);color:var(--teal)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+.btn.small{padding:3px 8px;font-size:12.5px}
+#sub{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);max-width:90%;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:6px;padding:4px 12px;font-size:13.5px;text-align:center;display:none;z-index:5}
+#sub.show{display:block}
+#panel{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.card h3{margin:0 0 8px;font-size:14.5px;color:var(--teal)}
+.card h3 span{color:var(--sub);font-weight:400;font-size:12px}
+.hint{font-size:12.5px;color:var(--sub)}
+#partBox{font-size:13.5px}
+#partBox b{color:var(--sub);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+th{background:#e7f4f1}
+td.num,th.num{text-align:right;white-space:nowrap}
+#log{max-height:140px;overflow:auto;font-size:12.5px}
+#log div{border-bottom:1px dashed #e6eeee;padding:2px 0}
+.wide{padding:0 10px 16px}
+ol.steps{margin:6px 0 0;padding-left:20px}
+ol.steps li{margin:6px 0}
+code{font-family:Consolas,monospace;font-size:12.5px;background:#f3f6f6;padding:0 4px;border-radius:3px}
+.wire svg{width:100%;height:auto;background:#fbfcfb;border:1px solid var(--line);border-radius:8px}
+.warnbox{background:#fff8eb;border:1px solid #f0dfb4;border-radius:8px;padding:8px 10px;color:#6b4e10;font-size:13px}
+#fallback{display:none;position:absolute;inset:0;background:#f7f8f6;z-index:6;padding:16px;overflow:auto}
+@media(max-width:900px){#layout{grid-template-columns:1fr}#stage{height:62vh}}
 </style>
 </head>
 <body>
 <header>
-  <h1>五瓶智能分药与取药提醒系统</h1>
-  <span class="hb">圆桶 · 五药瓶 · 五组瓶底接口 · 公共汇流漏斗</span>
-  <span class="hb warn">结构概念 / 模拟数据 / 未连接实物</span>
+  <h1>三管两层分药机</h1>
+  <span class="hb">三根药管 · 半开半关闸板 · 按药片做凹槽 · 前面药杯直接拿</span>
+  <span class="hb warn">能买能装的第一版 · 采购控制预算 452 元（上限 500）</span>
 </header>
-
 <div id="layout">
   <section id="stage">
-    <div id="badge">结构概念 · 模拟数据 · 未连接实物</div>
-    <div id="badge2">【演示加速中】</div>
     <div id="viewBar">
       <div class="grp">
-        <button class="btn small" data-view="iso">整体</button>
-        <button class="btn small" data-view="front">正面</button>
-        <button class="btn small" data-view="back">背面</button>
-        <button class="btn small" data-view="left">左侧</button>
-        <button class="btn small" data-view="right">右侧</button>
-        <button class="btn small" data-view="top">俯视</button>
-        <button class="btn small" data-view="lidtop">开盖俯视</button>
+        <button class="btn small" data-v="iso">整体</button>
+        <button class="btn small" data-v="front">正面药杯</button>
+        <button class="btn small" data-v="top">俯视两层</button>
+        <button class="btn small" data-v="side">侧面看支撑</button>
+        <button class="btn small" data-v="wire">看电路</button>
       </div>
       <div class="grp">
-        <label class="ck"><input type="checkbox" id="tTransparent">透明外壳</label>
-        <label class="ck"><input type="checkbox" id="tSection">半剖视</label>
-        <label class="ck"><input type="checkbox" id="tLabels" checked>标签</label>
-        <label class="ck"><input type="checkbox" id="tCones">视场</label>
-      </div>
-      <div class="grp">
-        <label class="ck"><input type="checkbox" id="tAutoRot">自动旋转</label>
-        <button class="btn small" id="btnResetView">复位视角</button>
+        <label><input type="checkbox" id="tShell" checked> 显示药管</label>
+        <label><input type="checkbox" id="tSpin"> 自动旋转</label>
       </div>
     </div>
-    <div id="canvasWrap">
-      <canvas id="c3d" tabindex="0"></canvas>
-      <div id="labels"></div>
-    </div>
+    <div id="canvasWrap"><canvas id="c3d"></canvas></div>
+    <div id="sub"></div>
     <div id="toolPanel">
       <div class="grp">
-        <span>整机拆解</span>
-        <input type="range" id="explodeSlider" min="0" max="100" value="0">
-        <button class="btn small" id="btnAssemble">复原装配</button>
+        <span>拆开看两层</span>
+        <input id="explode" type="range" min="0" max="100" value="0">
       </div>
       <div class="grp">
-        <span>单瓶接口拆解</span>
-        <button class="btn small gsel" data-gsel="A">A</button>
-        <button class="btn small gsel" data-gsel="B">B</button>
-        <button class="btn small gsel" data-gsel="C">C</button>
-        <button class="btn small gsel" data-gsel="D">D</button>
-        <button class="btn small gsel" data-gsel="E">E</button>
-      </div>
-      <div class="grp dev-only">
-        <label class="ck" title="圆盘相对转动为暂定原理展示，运动方案待样机验证"><input type="checkbox" id="tPrinciple" checked>暂定原理动画（待验证）</label>
-        <label class="ck"><input type="checkbox" id="tStep">步进模式</label>
+        <button class="btn primary small" data-go="A">A 出 1 片</button>
+        <button class="btn primary small" data-go="B">B 出 1 片</button>
+        <button class="btn primary small" data-go="C">C 出 1 片</button>
+        <button class="btn small" id="btnRound">按 A2 B1 C1 走一遍</button>
+        <button class="btn small" id="btnTake" disabled>从药杯拿走</button>
+        <button class="btn small" id="btnReset">复位</button>
       </div>
     </div>
-    <div id="subtitle"></div>
-    <div id="loader">正在加载三维引擎……</div>
-    <div id="fallback2d">
-      <div class="err" id="loadErrorMsg"></div>
-      <svg width="360" height="300" viewBox="0 0 360 300">
-        <rect x="110" y="20" width="140" height="16" rx="8" fill="#e5e9ea" stroke="#bcd" />
-        <rect x="120" y="36" width="120" height="150" rx="10" fill="#f7f9fa" stroke="#9ab" />
-        <circle cx="146" cy="60" r="14" fill="none" stroke="#e05" /><text x="141" y="65" font-size="12" fill="#e05">A</text>
-        <circle cx="180" cy="55" r="14" fill="none" stroke="#38f" /><text x="175" y="60" font-size="12" fill="#38f">B</text>
-        <circle cx="214" cy="60" r="14" fill="none" stroke="#2c2" /><text x="209" y="65" font-size="12" fill="#2c2">C</text>
-        <path d="M128,150 L232,150 L192,196 L168,196 Z" fill="#eef3f4" stroke="#8aa" />
-        <rect x="150" y="205" width="34" height="22" rx="5" fill="#fff" stroke="#456" />
-        <text x="126" y="106" font-size="11" fill="#678">五个药瓶A-E（各配瓶底三层接口）</text>
-        <text x="126" y="170" font-size="11" fill="#678">公共汇流漏斗</text>
-        <text x="126" y="234" font-size="11" fill="#678">可抽取药盒</text>
-        <text x="92" y="272" font-size="12" fill="#b45309">2D 备用示意（三维库加载失败时显示，所有面板按钮仍可用）</text>
-      </svg>
-    </div>
+    <div id="fallback"></div>
   </section>
-
   <aside id="panel">
     <section class="card">
-      <h3>运行状态</h3>
-      <div class="statebar">
-        <span id="stateText">空闲</span>
-        <span class="statechip" id="chipRoute">药路：—</span>
-        <span class="statechip" id="chipCmd">指令：—</span>
-      </div>
-      <table class="tbl" id="vecTable"></table>
-      <div class="hint">三向量按类别对比（目标 / 光电 / 视觉），不只比较总粒数。</div>
+      <h3>现在这台机器在做什么</h3>
+      <div id="stateLine" style="font-weight:700;color:var(--teal)">空闲，三根药管都关着</div>
+      <table id="cnt"></table>
+      <p class="hint">药片只在被第一层挡住、被第二层凹槽托住、或已经滑进药杯时才出现。没有悬空的零件，也没有悬空的文字标签。点模型上的零件，右边会出现它的装法。</p>
     </section>
-
-    <section class="card" id="partCardSec">
-      <h3>部件信息 <span class="tag">点击三维模型部件查看</span></h3>
-      <div id="partCard"></div>
-    </section>
-
     <section class="card">
-      <h3>手机模拟面板 <span class="tag">人工确认数量 · 0–5 粒</span></h3>
-      <div class="qgrid">
-        <div><label>A</label><input id="qtyA" type="number" min="0" max="5" value="2"></div>
-        <div><label>B</label><input id="qtyB" type="number" min="0" max="5" value="1"></div>
-        <div><label>C</label><input id="qtyC" type="number" min="0" max="5" value="0"></div>
-        <div><label>D</label><input id="qtyD" type="number" min="0" max="5" value="1"></div>
-        <div><label>E</label><input id="qtyE" type="number" min="0" max="5" value="1"></div>
-      </div>
-      <div class="btnrow">
-        <button class="btn primary" id="btnSend">下发任务</button>
-        <button class="btn dev-only" id="btnSound">允许提示音</button>
-        <select id="modeSel" class="btn" style="padding:6px 8px;">
-          <option value="demo">演示模式（模拟）</option>
-          <option value="real">实物模式（适配层）</option>
-        </select>
-      </div>
-      <div class="hint" id="remindInfo"></div>
-      <div class="hint warn" id="realHint" style="display:none;">实物模式未配置连接：任务将停在“等待设备回报”，动画完成不代表硬件执行。</div>
-      <div class="btnrow dev-only">
-        <button class="btn" id="btnTake1" disabled>取走一粒</button>
-        <button class="btn" id="btnTakeAll" disabled>全部取走</button>
-        <button class="btn" id="btnReturnDrawer" style="display:none;">放回药盒</button>
-        <button class="btn" id="btnConfirmDrawer" style="display:none;">确认已放回</button>
-        <button class="btn" id="btnReconnect" style="display:none;">恢复连接</button>
-        <button class="btn" id="btnRefillE" style="display:none;">E 瓶已补充</button>
-      </div>
-      <ul id="notifList"></ul>
+      <h3>点中的零件 <span>标签贴在零件上，不飘在空中</span></h3>
+      <div id="partBox">点药管、闸板、凹槽盘、舵机、开发板或摄像头。</div>
     </section>
-
     <section class="card">
-      <h3>服务器与通信 <span class="tag">Mock 适配层</span></h3>
-      <div class="statebar">
-        <span class="statechip" id="chipDevice">设备：演示模拟</span>
-        <span class="statechip" id="chipNet">链路：正常</span>
-      </div>
-      <svg id="flowSvg" viewBox="0 0 360 118" preserveAspectRatio="xMidYMid meet">
-        <defs>
-          <marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9ab"/></marker>
-        </defs>
-        <line id="lnPhone" x1="86" y1="34" x2="140" y2="34" stroke="#2563eb" stroke-width="2.4" marker-end="url(#arr)"/>
-        <line id="lnSvr" x1="228" y1="34" x2="282" y2="34" stroke="#2563eb" stroke-width="2.4" marker-end="url(#arr)"/>
-        <line id="lnCtl" x1="286" y1="50" x2="232" y2="50" stroke="#0d9488" stroke-width="2.4" marker-end="url(#arr)"/>
-        <line id="lnCam" x1="200" y1="86" x2="146" y2="86" stroke="#7c3aed" stroke-width="2.4" marker-end="url(#arr)"/>
-        <text x="44" y="46" font-size="11" fill="#2b3a42" text-anchor="middle">手机</text>
-        <text x="44" y="58" font-size="9" fill="#7c8">模拟面板</text>
-        <rect x="140" y="20" width="88" height="30" rx="7" fill="#eef6f4" stroke="#0d9488"/>
-        <text x="184" y="39" font-size="11" text-anchor="middle" fill="#0d9488">服务器 / commandId</text>
-        <rect x="286" y="20" width="64" height="30" rx="7" fill="#fdf6ec" stroke="#b45309"/>
-        <text x="318" y="39" font-size="11" text-anchor="middle" fill="#b45309">ESP32-S3</text>
-        <rect x="86" y="72" width="60" height="28" rx="7" fill="#f4f0fb" stroke="#7c3aed"/>
-        <text x="116" y="90" font-size="11" text-anchor="middle" fill="#7c3aed">电脑·视觉</text>
-        <rect x="200" y="72" width="76" height="28" rx="7" fill="#f4f0fb" stroke="#7c3aed"/>
-        <text x="238" y="90" font-size="11" text-anchor="middle" fill="#7c3aed">CAM-01/INV-01</text>
-        <text x="184" y="14" font-size="9" fill="#7c8" text-anchor="middle">手机→服务器→硬件：下行任务/上行状态</text>
-      </svg>
-      <div class="legend">
-        <span><i style="background:#2563eb"></i>蓝：Wi-Fi/网络消息</span>
-        <span><i style="background:#0d9488"></i>绿：控制信号</span>
-        <span><i style="background:#f59e0b"></i>橙：5V 低压供电</span>
-        <span><i style="background:#7c3aed"></i>紫：摄像头 USB→电脑</span>
-      </div>
-      <div id="cmdLog" class="dev-only"></div>
-    </section>
-
-    <section class="card">
-      <h3>托盘视觉 · CAM-01 <span class="tag">模拟视觉结果（预设数据，非实时AI）</span></h3>
-      <canvas id="visionCv" width="360" height="200"></canvas>
-      <div class="hint" id="visionHint">药盒在位、画面稳定时拍摄；按颜色/类别+数量共同核验。</div>
-    </section>
-
-    <section class="card">
-      <h3>库存观察 · INV-01 <span class="tag">镜头布置待验证</span></h3>
-      <table class="tbl" id="invTable"></table>
-      <div class="btnrow"><button class="btn small" id="btnInvCheck">立即检查库存</button></div>
-      <div class="hint">INV-01 一次只观察正对的一瓶（A）；其余为“未知”，镜头/扫描布置待样机验证。库存为图像分级判断，不显示精确粒数。</div>
-    </section>
-
-    <section class="card">
-      <h3>演示场景 <span class="tag">互斥 · 从明确初始状态运行</span></h3>
-      <div class="btnrow">
-        <button class="btn primary" data-scen="normal">正常配药（A2 B1 C0 D1 E1）</button>
-        <button class="btn" data-scen="missA">缺一粒·两路一致→有限补发</button>
-        <button class="btn" data-scen="extraB">多一粒→停止并提醒</button>
-        <button class="btn" data-scen="partialTake">部分取走→不补发</button>
-        <button class="btn" data-scen="timeout">超时未取→提醒（加速）</button>
-        <button class="btn" data-scen="elow">E瓶低库存→上报</button>
-      </div>
-      <div class="btnrow dev-only">
-        <button class="btn" id="btnPause" disabled>暂停</button>
-        <button class="btn" id="btnStep" disabled>下一步</button>
-        <button class="btn warn" id="btnReset">重置</button>
-        <button class="btn dev-only" id="btnTour">自动讲解（录屏脚本）</button>
-        <label class="ck"><input type="checkbox" id="tRecording">录屏布局</label>
-        <label class="ck"><input type="checkbox" id="tSlow">慢速动作</label>
-      </div>
-      <details class="fold dev-only">
-        <summary>附加故障场景（折叠区）</summary>
-        <div class="btnrow">
-          <button class="btn small" data-scen="conflictA">计数与视觉冲突</button>
-          <button class="btn small" data-scen="wrongColor">错颜色/低置信度</button>
-          <button class="btn small" data-scen="drawerMid">运行中抽出药盒</button>
-          <button class="btn small" data-scen="connLoss">连接中断</button>
-        </div>
-      </details>
-    </section>
-
-    <section class="card dev-only">
-      <h3>部件与采购状态 <span class="tag">数量待新结构核算</span></h3>
-      <table class="tbl" id="bomTable"></table>
-      <div class="hint warn">旧版“五舵机/五对计数”清单已作废；执行器与计数按新结构调整后重新核算，价格不再沿用旧总价。</div>
-    </section>
-
-    <section class="card dev-only">
-      <h3>工程说明（诚实边界）</h3>
-      <ul class="hint" style="margin:4px 0; padding-left:18px;">
-        <li>本页为结构概念演示：圆形叠片的<b>运动方案（暂定旋转）待样机验证</b>，不是加工图。</li>
-        <li>L1/L3 孔相距 180°，L2 腔在任意时刻最多对准其一，移动过程中不会上下贯通；胶囊不穿过实心板。</li>
-        <li>五瓶共用的是<b>最终落药口与计数</b>，<b>不共用瓶底定量接口</b>；一次只运行一路。</li>
-        <li>逐粒动画仅用于解释流程，不代表机械单粒分离已经实现。</li>
-        <li>识别/称重结果均为标注“模拟”的预设数据；页面无任何 AI 密钥；实物模式未配置时显示未连接。</li>
-        <li>取药事件以“药盒已清空/用户确认”记录，不宣称验证服药。</li>
-      </ul>
+      <h3>动作记录</h3>
+      <div id="log"></div>
     </section>
   </aside>
 </div>
 
-<footer>
-  <div id="tl"></div>
-  <div id="eventLog"></div>
-</footer>
+<div class="wide">
+  <section class="card">
+    <h3>先看懂两层，再去买东西</h3>
+    <p>每一根药管下面只有两层活动件，都躺在底板上，用螺丝当轴，舵机只负责拨转，不托药柱的重量。</p>
+    <ol class="steps">
+      <li><b>第一层，一半开一半关。</b>圆片沿直径切掉一半。实心那一半转到药管正下方，药柱就停住；再转 180°，空的那一半对准药管，最底下那一片才能掉下去。这是开关，不负责“量一片”。</li>
+      <li><b>第二层，按药片尺寸挖凹槽。</b>整圆片上只有一个通孔，直径 = 你用卡尺量到的药片直径 + 0.6 mm，板厚 = 药片厚度 + 0.5 mm。孔下面是实心底板，所以药片掉进来会被托住，第二片进不去。凹槽转到底板的出药孔上，这一片才掉进斜滑道。</li>
+      <li><b>出药口就是前面的敞口药杯。</b>斜滑道两头都有着落：后面用螺丝固定在底板，前面搭在药杯沿上。手从前面直接拿，不用抽抽屉。</li>
+    </ol>
+    <div class="warnbox">页面里的 8 / 10 / 12 mm 只是演示。下单激光切割之前，必须用卡尺量真正要分的那种圆片，再把凹槽直径和药管内径改掉。药管内径 = 药片直径 + 1.5～2 mm，太松会侧翻，太紧会卡死。</div>
+  </section>
 
+  <section class="card">
+    <h3>电路怎么接</h3>
+    <p class="hint">电脑、开发板、舵机电源是三路。摄像头是普通 USB 免驱摄像头，插在已有电脑上，不接到 ESP32。六只舵机不要从开发板的 5V 脚取电。</p>
+    <div class="wire">
+      <svg viewBox="0 0 760 250">
+        <rect x="8" y="16" width="120" height="70" rx="6" fill="#fff" stroke="#0f766e"/>
+        <text x="68" y="44" text-anchor="middle" font-size="13">已有笔记本电脑</text>
+        <text x="68" y="64" text-anchor="middle" font-size="11" fill="#5c6e76">程序 + 看画面</text>
+        <rect x="168" y="16" width="130" height="70" rx="6" fill="#e7f4f1" stroke="#0f766e"/>
+        <text x="233" y="40" text-anchor="middle" font-size="13">ESP32-S3 开发板</text>
+        <text x="233" y="58" text-anchor="middle" font-size="11" fill="#5c6e76">USB 只供电和下载</text>
+        <text x="233" y="74" text-anchor="middle" font-size="11" fill="#5c6e76">逻辑 3.3V</text>
+        <rect x="168" y="150" width="150" height="82" rx="6" fill="#fff8eb" stroke="#9a6700"/>
+        <text x="243" y="174" text-anchor="middle" font-size="13">5V 5A 适配器</text>
+        <text x="243" y="194" text-anchor="middle" font-size="11" fill="#6b4e10">只给舵机</text>
+        <text x="243" y="212" text-anchor="middle" font-size="11" fill="#6b4e10">插头在机外</text>
+        <rect x="390" y="70" width="150" height="100" rx="6" fill="#eef3ff" stroke="#2563eb"/>
+        <text x="465" y="98" text-anchor="middle" font-size="13">PCA9685 驱动板</text>
+        <text x="465" y="118" text-anchor="middle" font-size="11" fill="#5c6e76">VCC = 3.3V 逻辑</text>
+        <text x="465" y="136" text-anchor="middle" font-size="11" fill="#5c6e76">V+ = 5V 舵机电源</text>
+        <text x="465" y="154" text-anchor="middle" font-size="11" fill="#5c6e76">OE 接 GND</text>
+        <rect x="590" y="70" width="158" height="100" rx="6" fill="#fff" stroke="#243036"/>
+        <text x="669" y="98" text-anchor="middle" font-size="13">6 只 MG90S</text>
+        <text x="669" y="118" text-anchor="middle" font-size="11" fill="#5c6e76">橙/黄 = 信号</text>
+        <text x="669" y="136" text-anchor="middle" font-size="11" fill="#5c6e76">红 = 5V（来自 V+）</text>
+        <text x="669" y="154" text-anchor="middle" font-size="11" fill="#5c6e76">棕 = GND</text>
+        <path d="M128 40 H168" stroke="#2563eb" stroke-width="2"/>
+        <path d="M298 50 H360 V100 H390" stroke="#0f766e" stroke-width="2" fill="none"/>
+        <path d="M318 190 H360 V150 H390" stroke="#d97706" stroke-width="2" fill="none"/>
+        <path d="M540 120 H590" stroke="#243036" stroke-width="2"/>
+        <text x="148" y="32" font-size="11" fill="#2563eb">USB</text>
+        <text x="330" y="78" font-size="11" fill="#0f766e">SDA/SCL/3V3/GND</text>
+        <text x="330" y="176" font-size="11" fill="#d97706">5V 与共地</text>
+      </svg>
+    </div>
+    <table>
+      <tr><th>从</th><th>接到</th><th>为什么</th></tr>
+      <tr><td>电脑 USB</td><td>ESP32-S3 的 USB 口</td><td>下载程序，同时给开发板逻辑电路供电</td></tr>
+      <tr><td>ESP32 <code>3V3</code></td><td>PCA9685 <code>VCC</code></td><td>驱动板的芯片用 3.3V，不要接到 V+</td></tr>
+      <tr><td>ESP32 <code>GND</code></td><td>PCA9685 <code>GND</code>，再接到电源负极</td><td>三路必须共地，否则舵机会乱转</td></tr>
+      <tr><td>ESP32 <code>GPIO8</code></td><td>PCA9685 <code>SDA</code></td><td>I2C 数据。开发板若丝印不同，以丝印为准，避开 GPIO0、GPIO3、GPIO45、GPIO46</td></tr>
+      <tr><td>ESP32 <code>GPIO9</code></td><td>PCA9685 <code>SCL</code></td><td>I2C 时钟</td></tr>
+      <tr><td>ESP32 <code>GPIO4</code></td><td>有源蜂鸣器正极，负极接 GND</td><td>提醒声。有源蜂鸣器本身带振荡，给高电平就响</td></tr>
+      <tr><td>ESP32 <code>GPIO5</code></td><td>LED 正极，串联 330Ω 后到 GND</td><td>状态灯</td></tr>
+      <tr><td>ESP32 <code>GPIO6</code></td><td>按键到 GND，程序里用上拉</td><td>确认已经拿走</td></tr>
+      <tr><td>适配器 5V</td><td>PCA9685 <code>V+</code>，旁边并一只 1000µF/16V 电容</td><td>舵机电流走这里。电容正极接 5V</td></tr>
+      <tr><td>适配器负极</td><td>PCA9685 <code>GND</code></td><td>与开发板共地</td></tr>
+      <tr><td>PCA9685 <code>OE</code></td><td><code>GND</code></td><td>不接地时，有的板子输出是关闭的</td></tr>
+      <tr><td>通道 0～5 信号脚</td><td>见下表舵机橙线</td><td>一次只让一只舵机转动</td></tr>
+      <tr><td>绿联 CM925 的 USB</td><td>笔记本电脑另一个 USB 口</td><td>看药杯。不要拆开改接到 ESP32</td></tr>
+    </table>
+    <p><b>六只舵机接在 PCA9685 的哪一路</b></p>
+    <table>
+      <tr><th>通道</th><th>带动</th><th>通道</th><th>带动</th></tr>
+      <tr><td>0</td><td>A 管第一层闸板</td><td>1</td><td>A 管第二层凹槽</td></tr>
+      <tr><td>2</td><td>B 管第一层闸板</td><td>3</td><td>B 管第二层凹槽</td></tr>
+      <tr><td>4</td><td>C 管第一层闸板</td><td>5</td><td>C 管第二层凹槽</td></tr>
+    </table>
+    <div class="warnbox">通电顺序：药管里先不要放药。舵机拨销先拔出。电脑 USB 插上开发板，确认程序起来后，再插 5V 适配器。舵机若一直嗡嗡叫，马上拔掉适配器，说明被卡住，金属齿也会打坏。调好“关”的位置再插回拨销、再放药。</div>
+  </section>
+
+  <section class="card">
+    <h3>拼装顺序</h3>
+    <ol class="steps">
+      <li>用卡尺量圆片的直径和厚度，各量 5 片取最大的那个。A/B/C 若是三种大小，就做三套不同的凹槽和三根不同内径的管子。</li>
+      <li>把下面这张尺寸交给淘宝“亚克力激光切割”，备注用 3 mm 透明板做闸板和底板，凹槽盘用板厚最接近“药片厚度 + 0.5 mm”的一档。底板用 5 mm 多层板或 5 mm 亚克力，自己钻四个脚的安装孔即可。</li>
+      <li>底板四角装 30 mm 尼龙柱当脚，板下只走电源线。六只舵机用耳朵上的螺丝平拧在底板正面，出轴朝上，摇臂指向圆片。闸板比凹槽盘高，所以第一层的拨销更长，销子插进圆片边缘的孔。</li>
+      <li>铺上 3 mm 出药底板，四角用短柱垫高到第二层圆片刚好贴着它转。出药孔和轴孔按表钻，不要钻在药管正下方。</li>
+      <li>M3 螺丝从下往上穿出当轴。第二层整圆片套上，加一片薄垫片，再套第一层半圆片，上面用防松螺母，留出能转动的间隙，不要拧死。</li>
+      <li>舵机固定在底板槽里，舵机摇臂上的拨销插进圆片边缘的孔。手拧摇臂，半圆片应能在“挡住药管”和“完全让开”之间转 180°；凹槽应能从药管正下方转到出药孔正上方。</li>
+      <li>四根长柱支起压管板。药管从压管板的孔里插到底，管口离第一层约 1 mm，用热熔胶在压管板上固定。管不能悬空，也不能压住圆片。</li>
+      <li>斜滑道后端用两颗 M3 螺丝固定在出药底板前面，前端放上敞口药杯，滑道搭在杯沿上。药杯就放在桌面上。</li>
+      <li>摄像头用一根铝角条或金属软管支架拧在底板左前角，镜头朝下看到整个药杯，视线里不要有滑道挡着。USB 线沿支架和桌面走到电脑。</li>
+      <li>开发板和 PCA9685 用短尼龙柱拧在底板后部。线都贴着底板走，用扎带固定，不要悬在药管中间。</li>
+      <li>空载试转。再各放 5 片。第一层关闭时摇管子，药片不得漏。打开时应只掉进凹槽一片。转凹槽时上面的药柱应停在第一层上。</li>
+    </ol>
+    <p><b>交给激光切割的尺寸（单位 mm，原点在出药底板中心）</b></p>
+    <table>
+      <tr><th>零件</th><th>尺寸</th><th>孔</th></tr>
+      <tr><td>出药底板</td><td>220 × 100 × 3</td><td>三根轴：x = -70, 0, 70，孔直径 3.2。三个出药孔在各自轴的前方偏右 16 mm 处，孔径 8（小于最小药片，避免没对准也漏；真正漏药靠凹槽转到这个孔上）</td></tr>
+      <tr><td>第一层闸板 ×3</td><td>直径 46，厚 2，只要半圆</td><td>圆心 M3 轴孔；圆弧边缘再钻直径 1.5 的拨销孔</td></tr>
+      <tr><td>第二层凹槽盘 ×3</td><td>直径 46，厚度 = 片厚 + 0.5</td><td>圆心 M3 轴孔；距圆心 16 mm 处一个孔，孔径 = 片径 + 0.6。A/B/C 孔径不同就不要切成一样</td></tr>
+      <tr><td>压管板</td><td>220 × 80 × 3</td><td>三孔，孔距 70，孔径 = 对应管子外径 + 0.4</td></tr>
+      <tr><td>药管</td><td>长 150</td><td>内径 = 片径 + 1.5～2。演示若是 8/10/12 mm 片，对应去找内径约 10/12/14 mm 的透明亚克力管</td></tr>
+      <tr><td>斜滑道</td><td>2 mm 板，宽 90，长约 120，可热弯</td><td>后端两个 M3 固定孔</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h3>采购清单 · 合计控制在 500 元以内</h3>
+    <p class="hint">下面是整行控制预算，不是店铺实时标价。下单时打开京东或品牌官网，认准“京东自营 / 旗舰店”并且页面写着 3 日内达。某一行涨价，就换同一行里的备选，不要加功能。</p>
+    <table id="bom"></table>
+    <p id="bomSum"></p>
+    <div class="warnbox">电脑默认已经有，不占这 500 元。不买第二只摄像头：三根管子是透明的，库存用眼睛看。摄像头只负责看药杯里掉出来的片子。不要买 ESP32-CAM 来替代，那个镜头不看药杯，也很难在三天内调通。</div>
+  </section>
+</div>
 <script type="module">
-/* =============== 0. 基础工具与配置 =============== */
 const $ = id => document.getElementById(id);
-const ABORT = Symbol('abort');
-const CLS = ['A','B','C','D','E'];
-const CLS_COLOR = { A:'#e74c3c', B:'#3b87d8', C:'#2fbf71', D:'#f2a93b', E:'#9b59d6' };
-const CLS_COLOR_HEX = { A:0xe74c3c, B:0x3b87d8, C:0x2fbf71, D:0xf2a93b, E:0x9b59d6 };
-const ANG = { A:90, B:162, C:234, D:306, E:18 };   // A 在正前方（+Z）
-const R_RING = 8;                                   // 药瓶环半径（概念比例）
-const REMIND_REAL_MS = 300 * 1000;                  // 真实提醒间隔 300 秒
-const REMIND_DEMO_MS = 10 * 1000;                   // 演示加速 10 秒
-const CHANNEL_CLEAR_MS = 800;                       // 通道清空确认（演示参数）
-const INV_CHECK_MS = 60 * 1000;                     // 周期库存检查（演示参数）
-let SPEED = 1;                                      // 慢速动作系数
+const BOM = [
+  ['CTRL-01','ESP32-S3 开发板（搜「ESP32-S3-DevKitC-1」或「安信可 ESP32-S3 N16R8」，京东自营）','1 块',45,'逻辑控制。备选：同规格 N8R2 开发板，只要带 USB 下载口'],
+  ['DRV-01','PCA9685 16 路舵机驱动板','1 块',16,'一块板分时带动 6 只舵机'],
+  ['ACT','MG90S 金属齿舵机','6 只',72,'每管 2 只：闸板 1、凹槽 1。塑料齿太容易打坏'],
+  ['CAM-01','绿联 CM925 USB 摄像头 1080P（官网型号 CM925-75587）','1 只',79,'插电脑。京东搜「绿联 CM925」或编码 75587，看 3 日内达。缺货就买绿联 CM797，仍是 UVC 免驱，单价别超过 80'],
+  ['PWR-01','5V 5A 电源适配器，DC 座另配端子','1 只',32,'只供舵机。不要用充电头硬顶'],
+  ['TUBE','透明亚克力管，三种内径，各长 150 mm','3 根',30,'按实测片径选内径'],
+  ['ACRY','亚克力激光切割 + 5 mm 底板','1 套',80,'淘宝本地加工，按上面的尺寸表'],
+  ['FAST','M3 螺丝、防松螺母、30 mm 尼龙柱、垫片、扎带','1 套',35,'含 1000µF/16V 电容 1 只、接线端子'],
+  ['ALM','有源蜂鸣器、LED、330Ω、轻触按键','1 套',10,'提醒和确认'],
+  ['DEMO','三种直径的圆形演示片（不是药品）','1 包',10,'先用这个试卡不卡'],
+  ['CUP','敞口小塑料杯或量杯','1 个',8,'出药口，直接拿'],
+  ['CAL','塑料游标卡尺','1 把',15,'没有卡尺就不要切凹槽'],
+  ['SHIP','运费余量','—',20,'凑单后通常用不到全部'],
+];
+const sum = BOM.reduce((s,r)=>s+r[3],0);
+$('bom').innerHTML = '<tr><th>编号</th><th>买什么</th><th>数量</th><th class="num">控制预算/元</th><th>备注</th></tr>'
+  + BOM.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="num">${r[3]}</td><td>${r[4]}</td></tr>`).join('');
+$('bomSum').innerHTML = `合计 <b>${sum}</b> 元，低于 500 元，还剩 ${500-sum} 元给涨价和返工。第二只摄像头不在清单里。`;
 
-const timers = new Set();
-function sched(fn, ms){ const t = setTimeout(()=>{ timers.delete(t); fn(); }, ms); timers.add(t); return t; }
-function clearAllTimers(){ timers.forEach(clearTimeout); timers.clear(); }
-const rawSleep = ms => new Promise(r => setTimeout(r, ms));
-function fmtClock(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
-function fmtStamp(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); }
-
-let cmdCounter = 0;
-function log(msg, cls){
-  const row = document.createElement('div'); row.className='row';
-  const s = document.createElement('span'); s.className='t'; s.textContent=fmtClock();
-  row.appendChild(s);
-  if(state && state.task && state.task.id){ const c=document.createElement('span'); c.className='c'; c.textContent='#'+state.task.id; row.appendChild(c); }
-  const m = document.createElement('span'); m.className='m '+(cls||''); m.textContent=' '+msg;
-  row.appendChild(m);
-  const el = $('eventLog'); el.insertBefore(row, el.firstChild);
-  while(el.children.length>220) el.removeChild(el.lastChild);
-}
-function phoneNotify(msg, warn){
-  const li=document.createElement('li'); if(warn) li.className='warn'; li.textContent=fmtClock()+' '+msg;
-  $('notifList').insertBefore(li, $('notifList').firstChild);
-  while($('notifList').children.length>30) $('notifList').removeChild($('notifList').lastChild);
-}
-function subtitle(txt){ const el=$('subtitle'); if(txt){ el.textContent=txt; el.classList.add('show'); } else el.classList.remove('show'); }
-function beep(freq=880, dur=0.15, times=1){
-  if(!state.soundOn){ flashStatusLight('#b45309'); return; }
-  try{
-    for(let i=0;i<times;i++){
-      const t0 = state.audioCtx.currentTime + i*(dur+0.12);
-      const o = state.audioCtx.createOscillator(), g = state.audioCtx.createGain();
-      o.frequency.value=freq; o.connect(g); g.connect(state.audioCtx.destination);
-      g.gain.setValueAtTime(0.25,t0); g.gain.exponentialRampToValueAtTime(0.001,t0+dur);
-      o.start(t0); o.stop(t0+dur+0.02);
-    }
-  }catch(e){}
-}
-
-/* 三维库加载失败的 2D 备用（不能白屏） */
-function showFallback(err){
-  $('loader').style.display='none';
-  $('fallback2d').style.display='flex';
-  $('loadErrorMsg').textContent = '三维引擎加载失败（'+(err && err.message || err)+'）。已切换为二维备用示意；右侧面板与演示按钮仍可操作。首次运行请联网或确认 libs/three.module.js 存在。';
-  window.__FALLBACK__ = true;
-}
-
-/* =============== 1. 全局状态 =============== */
-const state = {
-  mode:'demo', running:false, paused:false, runToken:0,
-  phase:'idle', task:null, pickupStarted:false,
-  targets:{A:0,B:0,C:0,D:0,E:0}, opto:{A:0,B:0,C:0,D:0,E:0}, vision:{A:0,B:0,C:0,D:0,E:0},
-  tray:[], trayMeshes:[], drawerOut:false, drawerConfirmed:true,
-  reminderOn:false, soundOn:false, audioCtx:null, statusLightFlash:0,
-  inv:{}, exploded:0, gateSolo:null, realModeAck:false,
-  cmdLogCount:0,
-};
-CLS.forEach(c=>state.inv[c]={level:'未知', seen:false, last:'—'});
-state.inv.A.level='充足'; state.inv.A.seen=true; state.inv.A.last=fmtStamp();
-
-/* =============== 2. 部件数据（点击卡片 / 采购列表） =============== */
 const PARTS = {
-  'BIN-A':{name:'药瓶 A（透明料筒）',qty:'5 个（A–E）',use:'各存放一种同规格彩色演示胶囊；人工顺向装填，不是自动整列器',pos:'桶内环形排布',iface:'瓶底与 L1 相接',st:'拟采购 · 结构概念'},
-  'BIN-B':{ref:'BIN-A',name:'药瓶 B',sub:'同 BIN-A'}, 'BIN-C':{ref:'BIN-A',name:'药瓶 C',sub:'同 BIN-A'},
-  'BIN-D':{ref:'BIN-A',name:'药瓶 D',sub:'同 BIN-A'}, 'BIN-E':{ref:'BIN-A',name:'药瓶 E',sub:'同 BIN-A'},
-  'GATE-A':{name:'瓶底三层接口 A（GATE-A-TOP/MID/BOT）',qty:'5 组',use:'接料→隔离→出料→复位 的单粒定量接口；L1 固定进料板 / L2 定量隔离层 / L3 固定出料板，L1 与 L3 孔位相距 180°，中位不贯通',pos:'各瓶正下方',iface:'舵机驱动（驱动方式待选型）',st:'机构待验证'},
-  'GATE-B':{ref:'GATE-A',name:'瓶底三层接口 B',sub:'同 GATE-A，共 5 组'}, 'GATE-C':{ref:'GATE-A',name:'瓶底三层接口 C',sub:'同 GATE-A，共 5 组'},
-  'GATE-D':{ref:'GATE-A',name:'瓶底三层接口 D',sub:'同 GATE-A，共 5 组'}, 'GATE-E':{ref:'GATE-A',name:'瓶底三层接口 E',sub:'同 GATE-A，共 5 组'},
-  'FUN-01':{name:'公共汇流漏斗',qty:'1 个',use:'五路出料汇入同一漏斗，内壁向中心导流；只收集导流，不代替瓶底定量',pos:'五组接口下方',iface:'—',st:'拟采购 · 倾斜/防卡待实测'},
-  'OUT-01':{name:'中央出口',qty:'1 个',use:'漏斗中央唯一下出口，所有胶囊经此通过',pos:'桶内中轴',iface:'—',st:'概念'},
-  'CNT-01':{name:'落料计数对射（红外）',qty:'1 对（公共通道）',use:'胶囊实际穿越光束才计数；一次完整遮挡/恢复计 1 个脉冲，不按动作次数',pos:'出口两侧',iface:'GPIO→主控',st:'拟采购'},
-  'TRAY-01':{name:'可抽取盛药盒（浅盘）',qty:'1 个',use:'承接全部落料，正面抽出/放回；混合样片由 CAM-01 按类别核验',pos:'漏斗出口下方',iface:'SW-01 在位检测',st:'拟采购'},
-  'SW-01':{name:'药盒在位开关',qty:'1 只',use:'药盒离位立即停止新的送料动作；放回后需明确确认',pos:'药盒槽后端',iface:'GPIO',st:'拟采购'},
-  'CAM-01':{name:'药盒摄像头（UVC USB）',qty:'1 只',use:'俯视药盘，按颜色/类别+数量核验；视野不遮挡',pos:'出口下方斜上方支架',iface:'USB→机外电脑（不接 ESP32）',st:'拟采购'},
-  'INV-01':{name:'库存观察模块（UVC USB）',qty:'1 只',use:'观察瓶身低位观察线；一次只能观察正对一瓶，其余未知；镜头/扫描布置待验证',pos:'桶壁观察窗外侧',st:'拟采购 · 布置待验证'},
-  'CTRL-01':{name:'主控 ESP32-S3',qty:'1 块',use:'一块主控串行控制 5 路接口，同一时间仅一路动作；Wi-Fi 即通信模块',pos:'底座电子区',iface:'Wi-Fi→服务器',st:'拟采购'},
-  'DRV-01':{name:'驱动板（示意）',qty:'1 块',use:'主控经驱动板分时驱动各路执行器；执行器型号与数量待新结构核算',pos:'底座电子区',iface:'I2C/PCA9685（示意）',st:'待选型'},
-  'PWR-01':{name:'5V 供电（机外成品适配器）',qty:'1 套',use:'成品适配器置于机箱外，低压线入机；药路与电区物理分离',pos:'机箱外·后部',iface:'端子分线',st:'拟采购'},
-  'ALM-01':{name:'蜂鸣器与状态灯',qty:'1 组',use:'提醒/异常报警；浏览器音频需用户允许，静默时仍有可见提醒',pos:'前面板',iface:'GPIO',st:'拟采购'},
-  'LID-01':{name:'圆顶盖',qty:'1 个',use:'打开后可观察五个加药孔，对应五个独立药位',pos:'桶体顶部',iface:'—',st:'拟采购'},
+  tube:'药管。下端插在压管板里，管口离闸板约 1 mm，药柱重量落在第一层实心半圆上，不悬空。',
+  l1:'第一层闸板。只有半圆，所以永远是一半开、一半关。实心半边在药管下就是关。舵机摇臂上的销子拨边缘，舵机不承受药柱重量。',
+  l2:'第二层凹槽盘。一个按药片直径加大 0.6 mm 的孔。孔底下是实心底板，药片停在孔里；转到出药孔上方才掉下去。',
+  bed:'出药底板。托住两层圆片，只在斜前方有出药孔，药管正下方没有孔，避免一转就漏一串。',
+  servo:'MG90S。橙线进 PCA9685 信号，红线进 V+，棕线进 GND。一次只转一只。',
+  cup:'敞口药杯，放在桌面上，斜滑道搭在杯沿。从这里直接拿药。',
+  cam:'绿联 CM925，支架拧在底板上，镜头看药杯。USB 去电脑，不接开发板。',
+  mcu:'ESP32-S3。USB 接电脑。3V3、GND、GPIO8、GPIO9 去 PCA9685。不要从这块板给舵机供电。',
+  drv:'PCA9685。VCC 接 3.3V，V+ 接 5V 5A，OE 接 GND，和开发板共地。',
+  pwr:'5V 5A 适配器放在机器外面，只进端子台。',
+  chute:'斜滑道。后端螺丝固定，前端搭在杯沿，药片沿坡滑下，不会停在空中。',
 };
 
-/* =============== 3. 加载 Three.js =============== */
-const THREE = await import('three').catch(e=>{ showFallback(e); return null; });
-let OrbitControls = null;
+function log(t){
+  const d=document.createElement('div');
+  const n=new Date();
+  d.textContent=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}  ${t}`;
+  $('log').prepend(d);
+}
+function sub(t){ const e=$('sub'); e.textContent=t||''; e.classList.toggle('show',!!t); }
+
+const THREE = await import('three').catch(e=>{fail(e);return null;});
+let OrbitControls=null;
 if(THREE){
-  try{ OrbitControls = (await import('three/addons/controls/OrbitControls.js')).OrbitControls; }
-  catch(e){ showFallback(new Error('OrbitControls 加载失败：'+e.message)); }
+  try{ OrbitControls=(await import('three/addons/controls/OrbitControls.js')).OrbitControls; }
+  catch(e){ fail(e); }
+}
+function fail(e){
+  $('fallback').style.display='block';
+  $('fallback').innerHTML='<p>三维库没有加载成功，拼装说明和接线图仍在下面，可以继续看。</p><p>'+(e&&e.message||e)+'</p>';
 }
 if(THREE && OrbitControls){
 try{
-  document.createElement('canvas').getContext('webgl2') || document.createElement('canvas').getContext('webgl');
+const canvas=$('c3d');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xe7eee9);
+const camera=new THREE.PerspectiveCamera(42,1,0.1,200);
+camera.position.set(28,22,28);
+const controls=new OrbitControls(camera,canvas);
+controls.target.set(0,6,0);
+controls.enableDamping=true;
+scene.add(new THREE.AmbientLight(0xffffff,0.75));
+const sun=new THREE.DirectionalLight(0xffffff,1.15);
+sun.position.set(16,30,12); scene.add(sun);
+scene.add(new THREE.DirectionalLight(0xdde7ff,0.35)).position.set(-12,8,-10);
 
-const canvas = $('c3d');
-const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.localClippingEnabled = true;
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf1f4f5);
-const camera = new THREE.PerspectiveCamera(42, 2, 0.1, 300);
-camera.position.set(27, 22, 33);
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true; controls.dampingFactor = 0.08;
-controls.target.set(0, 13, 0); controls.maxPolarAngle = Math.PI*0.52; controls.maxDistance=90; controls.minDistance=8;
-
-scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-const dl1 = new THREE.DirectionalLight(0xffffff, 1.25); dl1.position.set(24, 34, 18); scene.add(dl1);
-const dl2 = new THREE.DirectionalLight(0xdfefff, 0.45); dl2.position.set(-20, 12, -26); scene.add(dl2);
-
-/* 材质 */
-const clipPlane = new THREE.Plane(new THREE.Vector3(0,0,-1), 0.02); // 半剖：切掉 z>0 半边外壳
-const mat = {
-  shell: new THREE.MeshStandardMaterial({color:0xeef0f1, roughness:.55, metalness:.05, transparent:true, opacity:1, side:THREE.DoubleSide}),
-  lid:   new THREE.MeshStandardMaterial({color:0xe7ebec, roughness:.5, metalness:.05, transparent:true, opacity:1, side:THREE.DoubleSide}),
-  funnel: new THREE.MeshStandardMaterial({color:0xdfe8e6, roughness:.4, transparent:true, opacity:.75, side:THREE.DoubleSide}),
-  rim:   new THREE.MeshStandardMaterial({color:0xb9c6c9, roughness:.4}),
-  glass: new THREE.MeshStandardMaterial({color:0xbfd8dd, roughness:.15, transparent:true, opacity:.28, side:THREE.DoubleSide}),
-  disc1: new THREE.MeshStandardMaterial({color:0x8fb9b2, roughness:.45}),
-  disc2: new THREE.MeshStandardMaterial({color:0xd9a44a, roughness:.45}),
-  disc3: new THREE.MeshStandardMaterial({color:0x7a92b8, roughness:.45}),
-  white: new THREE.MeshStandardMaterial({color:0xf6f7f8, roughness:.5}),
-  dark:  new THREE.MeshStandardMaterial({color:0x39464e, roughness:.6}),
-  pcbG:  new THREE.MeshStandardMaterial({color:0x2f9e6f, roughness:.5}),
-  pcbB:  new THREE.MeshStandardMaterial({color:0x2b5f8f, roughness:.5}),
-  pwr:   new THREE.MeshStandardMaterial({color:0xd8dde0, roughness:.6}),
-  orangeWire: new THREE.MeshStandardMaterial({color:0xf59e0b, roughness:.7}),
-  greenWire: new THREE.MeshStandardMaterial({color:0x16a34a, roughness:.7}),
-  purpleWire: new THREE.MeshStandardMaterial({color:0x7c3aed, roughness:.7}),
-  gray:  new THREE.MeshStandardMaterial({color:0x9aa7ad, roughness:.6}),
-  tray:  new THREE.MeshStandardMaterial({color:0xffffff, roughness:.35}),
+const mat={
+  wood:new THREE.MeshStandardMaterial({color:0xc4a574,roughness:.8}),
+  bed:new THREE.MeshStandardMaterial({color:0xd5e4df,roughness:.4,side:THREE.DoubleSide}),
+  l1:new THREE.MeshStandardMaterial({color:0x2f9e8f,roughness:.45,side:THREE.DoubleSide}),
+  l2:new THREE.MeshStandardMaterial({color:0xd08a2c,roughness:.45,side:THREE.DoubleSide}),
+  metal:new THREE.MeshStandardMaterial({color:0xb9c2c6,metalness:.4,roughness:.35}),
+  tube:new THREE.MeshStandardMaterial({color:0xb7d4d8,transparent:true,opacity:.28,roughness:.1,side:THREE.DoubleSide,depthWrite:false}),
+  dark:new THREE.MeshStandardMaterial({color:0x2c3a40,roughness:.6}),
+  white:new THREE.MeshStandardMaterial({color:0xf4f7f6,roughness:.5}),
+  green:new THREE.MeshStandardMaterial({color:0x1f8a70,roughness:.5}),
+  blue:new THREE.MeshStandardMaterial({color:0x24558a,roughness:.5}),
+  alum:new THREE.MeshStandardMaterial({color:0xd5d8dc,metalness:.25,roughness:.4}),
+  cup:new THREE.MeshStandardMaterial({color:0xf7f7f5,roughness:.35,side:THREE.DoubleSide}),
+  slide:new THREE.MeshStandardMaterial({color:0xe7eee8,transparent:true,opacity:.85,side:THREE.DoubleSide}),
+  orange:new THREE.MeshStandardMaterial({color:0xe8943a,roughness:.5}),
+  black:new THREE.MeshStandardMaterial({color:0x22282b,roughness:.7}),
 };
-const clipMats = [mat.shell, mat.lid, mat.funnel];
+const clickable=[];
+function tag(mesh,id){ mesh.userData.part=id; clickable.push(mesh); return mesh; }
+function cyl(r,h,m){ return new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,28), m); }
 
-/* 带真实通孔的圆形盘片（ExtrudeGeometry，孔为真实几何） */
-function discGeo(radius, holeR, hx, hy, depth){
-  const s = new THREE.Shape();
-  s.absarc(0,0,radius,0,Math.PI*2,false);
-  if(holeR>0){ const h = new THREE.Path(); h.absarc(hx,hy,holeR,0,Math.PI*2,true); s.holes.push(h); }
-  const g = new THREE.ExtrudeGeometry(s, {depth, bevelEnabled:false, curveSegments:44});
-  g.rotateX(-Math.PI/2);   // 挤出方向变为 +Y，厚度向上
+function extrude(shape,depth){
+  const g=new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:false,curveSegments:40});
+  g.rotateX(-Math.PI/2);
   return g;
 }
-const RAD = a => a*Math.PI/180;
-function ringPos(deg, r){ return new THREE.Vector3(r*Math.cos(RAD(deg)), 0, r*Math.sin(RAD(deg))); }
-
-/* 机身根结点 */
-const machine = new THREE.Group(); scene.add(machine);
-const partMeshes = [];   // 可点击网格
-const labelAnchors = []; // 标签锚点
-function reg(mesh, partId){
-  mesh.traverse ? mesh.traverse(o=>{ if(o.isMesh){ o.userData.partId = o.userData.partId || partId; partMeshes.push(o); } }) : null;
+function halfDiscGeo(R,axle,depth){
+  const s=new THREE.Shape();
+  s.moveTo(R,0);
+  s.absarc(0,0,R,0,-Math.PI,true);
+  s.closePath();
+  const h=new THREE.Path();
+  h.absarc(0,0,axle,0,Math.PI*2,true);
+  s.holes.push(h);
+  return extrude(s,depth);
 }
-function addLabel(id, text, getPos){
-  const div = document.createElement('div'); div.className='plabel'; div.innerHTML=text;
-  $('labels').appendChild(div);
-  labelAnchors.push({id, div, getPos});
-}
-
-/* --- 底座 --- */
-const baseGroup = new THREE.Group(); machine.add(baseGroup);
-const baseDisc = new THREE.Mesh(new THREE.CylinderGeometry(14.3, 14.6, 1.5, 48), mat.gray);
-baseDisc.position.y = 0.75; baseGroup.add(baseDisc);
-baseGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(11.5, 11.5, 0.25, 48), mat.dark).translateY(1.62));
-
-/* --- 外壳 --- */
-const shellGroup = new THREE.Group(); machine.add(shellGroup);
-const shellMesh = new THREE.Mesh(new THREE.CylinderGeometry(13.8, 13.8, 24.4, 48, 1, true), mat.shell);
-shellMesh.position.y = 1.5 + 12.2; shellGroup.add(shellMesh);
-const shellTopRing = new THREE.Mesh(new THREE.TorusGeometry(13.8, .22, 10, 48), mat.rim);
-shellTopRing.rotation.x = Math.PI/2; shellTopRing.position.y = 25.9; shellGroup.add(shellTopRing);
-/* 前面：药盒玻璃窗 + 控制小面板 */
-const trayWindow = new THREE.Mesh(new THREE.BoxGeometry(7.2, 3.0, 0.24), mat.glass);
-trayWindow.position.set(0, 3.4, 13.68); shellGroup.add(trayWindow);
-const invWindow = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.8, 0.2), mat.glass);
-invWindow.position.set(0, 15.2, 13.7); shellGroup.add(invWindow);
-const frontPanel = new THREE.Group(); shellGroup.add(frontPanel);
-frontPanel.add(new THREE.Mesh(new THREE.BoxGeometry(9.0, 1.9, 0.5), mat.white).translateX(0));
-frontPanel.position.set(0, 6.3, 13.35);
-const statusLight = new THREE.Mesh(new THREE.SphereGeometry(.42, 16, 12),
-  new THREE.MeshStandardMaterial({color:0x8b98a0, emissive:0x000000}));
-statusLight.position.set(-3.2, 0.35, 0.3); frontPanel.add(statusLight);
-statusLight.userData.partId='ALM-01';
-const btnConfirm3d = new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.5,20),
-  new THREE.MeshStandardMaterial({color:0x0d9488, roughness:.4}));
-btnConfirm3d.rotation.x = Math.PI/2; btnConfirm3d.position.set(0.4,0.25,0.35); frontPanel.add(btnConfirm3d);
-btnConfirm3d.userData.partId='BTN-01';
-const btnStop3d = new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.5,20),
-  new THREE.MeshStandardMaterial({color:0xdc2626, roughness:.4}));
-btnStop3d.rotation.x = Math.PI/2; btnStop3d.position.set(2.6,0.25,0.35); frontPanel.add(btnStop3d);
-btnStop3d.userData.partId='BTN-02';
-const buzzer3d = new THREE.Mesh(new THREE.CylinderGeometry(.55,.42,.6,20), mat.dark);
-buzzer3d.position.set(-1.4, 0.5, 0.3); frontPanel.add(buzzer3d); buzzer3d.userData.partId='ALM-01';
-addLabel('ALM-01','ALM-01 蜂鸣器/状态灯', ()=>statusLight.getWorldPosition(new THREE.Vector3()));
-addLabel('BTN-01','BTN-01/02 确认·停止', ()=>btnConfirm3d.getWorldPosition(new THREE.Vector3()));
-
-/* --- 圆盖（可开） --- */
-const lidPivot = new THREE.Group(); lidPivot.position.set(0, 25.9, -13.8); machine.add(lidPivot);
-const lidGroup = new THREE.Group(); lidPivot.add(lidGroup); lidGroup.position.set(0, 0, 13.8);
-const domeProfile = [];
-[[13.8,0],[13.5,.7],[12.2,1.7],[9.6,2.7],[6.2,3.5],[3.0,4.0],[0.0,4.3]].forEach(p=>domeProfile.push(new THREE.Vector2(p[0],p[1])));
-const domeMesh = new THREE.Mesh(new THREE.LatheGeometry(domeProfile, 48), mat.lid);
-lidGroup.add(domeMesh);
-const lidHandle = new THREE.Mesh(new THREE.TorusGeometry(1.1,.14,10,28), mat.rim);
-lidHandle.position.set(0, 4.0, 5.2); lidHandle.rotation.y = Math.PI/2; lidGroup.add(lidHandle);
-domeMesh.userData.partId='LID-01'; partMeshes.push(domeMesh);
-addLabel('LID-01','LID-01 圆顶盖', ()=>lidGroup.localToWorld(new THREE.Vector3(0,4.3,0)));
-
-/* --- 公共汇流漏斗 + 出口 + 计数 --- */
-const funnelGroup = new THREE.Group(); machine.add(funnelGroup);
-const funnelWall = new THREE.Mesh(new THREE.CylinderGeometry(11.6, 2.2, 4.3, 48, 1, true), mat.funnel);
-funnelWall.position.y = 7.0 + 2.15; funnelGroup.add(funnelWall);
-funnelWall.userData.partId='FUN-01';
-const funnelRim = new THREE.Mesh(new THREE.TorusGeometry(11.6, .3, 10, 48), mat.rim);
-funnelRim.rotation.x = Math.PI/2; funnelRim.position.y = 11.3; funnelGroup.add(funnelRim);
-const outletTube = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.0, 1.4, 32, 1, true), mat.gray);
-outletTube.material = new THREE.MeshStandardMaterial({color:0x8fa0a6, roughness:.5, side:THREE.DoubleSide, transparent:true, opacity:.9});
-outletTube.position.y = 6.3; funnelGroup.add(outletTube);
-outletTube.userData.partId='OUT-01';
-const beamMat = new THREE.MeshBasicMaterial({color:0xff5544, transparent:true, opacity:.22});
-const optoBeam = new THREE.Mesh(new THREE.BoxGeometry(4.2, .1, .1), beamMat);
-optoBeam.position.set(0, 6.4, 0); funnelGroup.add(optoBeam);
-const optoE = new THREE.Mesh(new THREE.BoxGeometry(.5,.7,.9), mat.dark); optoE.position.set(2.2,6.4,0);
-const optoR = optoE.clone(); optoR.position.set(-2.2,6.4,0); funnelGroup.add(optoE, optoR);
-optoE.userData.partId='CNT-01'; optoR.userData.partId='CNT-01'; partMeshes.push(optoE, optoR, funnelWall, outletTube);
-addLabel('FUN-01','FUN-01 公共汇流漏斗', ()=>new THREE.Vector3(0,11.3,11.6));
-addLabel('OUT-01','OUT-01 中央出口·CNT-01 计数', ()=>new THREE.Vector3(0,6.3,2.2));
-
-/* --- 可抽取药盒 + 在位开关 --- */
-const trayGroup = new THREE.Group(); machine.add(trayGroup);
-const trayBase = new THREE.Mesh(new THREE.CylinderGeometry(3.1, 3.1, .3, 36), mat.tray);
-trayBase.position.y = 2.5; trayGroup.add(trayBase);
-const trayWall = new THREE.Mesh(new THREE.TorusGeometry(2.95, .22, 10, 36), mat.tray);
-trayWall.rotation.x = Math.PI/2; trayWall.position.y = 3.1; trayGroup.add(trayWall);
-const drawerFront = new THREE.Mesh(new THREE.BoxGeometry(6.2, 2.2, .35), mat.white);
-drawerFront.position.set(0, 3.15, 3.15); trayGroup.add(drawerFront);
-const drawerHandle = new THREE.Mesh(new THREE.BoxGeometry(2.0,.4,.18), mat.rim);
-drawerHandle.position.set(0, 3.15, 3.45); trayGroup.add(drawerHandle);
-trayBase.userData.partId='TRAY-01'; drawerFront.userData.partId='TRAY-01';
-partMeshes.push(trayBase, drawerFront, trayWall);
-const swBox = new THREE.Mesh(new THREE.BoxGeometry(.8,.7,.5), mat.dark);
-swBox.position.set(0, 2.0, -3.5); machine.add(swBox);
-const swLever = new THREE.Mesh(new THREE.BoxGeometry(.2,1.0,.2), mat.gray);
-swLever.position.set(0, 2.6, -3.5); machine.add(swLever);
-swBox.userData.partId='SW-01'; swLever.userData.partId='SW-01'; partMeshes.push(swBox);
-addLabel('TRAY-01','TRAY-01 可抽取药盒', ()=>trayGroup.localToWorld(new THREE.Vector3(-3.1,3.1,0)));
-addLabel('SW-01','SW-01 药盒在位开关', ()=>new THREE.Vector3(0,2.6,-3.9));
-
-/* --- 五只药瓶 + 五组瓶底三层叠片接口 --- */
-const capsuleGeo = new THREE.CapsuleGeometry(0.42, 0.5, 6, 14);
-const gates = {};      // cls -> {group, l2, a, stack}
-const bottles = {};    // cls -> {group, glassMat, capMat, capsules[], stockN}
-const gateStack = { l1Bot:13.85, l1d:0.5, l2Bot:12.25, l2d:1.3, l3Bot:11.6, l3d:0.5 };
-const POCKET_Y = 12.25 + 0.65;
-const HOLE_R = 0.62, POCKET_R = 0.7, HOLE_D = 1.2;
-const DISC_R = 2.7;
-
-function pocketWorld(cls, aDeg){
-  const th = RAD(ANG[cls]);
-  const a = RAD(aDeg);
-  const local = new THREE.Vector3(Math.cos(a), 0, -Math.sin(a)).applyAxisAngle(new THREE.Vector3(0,1,0), -th);
-  return ringPos(ANG[cls], R_RING).add(local.multiplyScalar(HOLE_D));
+function fullDiscGeo(R,axle,holeR,holeY,depth){
+  const s=new THREE.Shape();
+  s.absarc(0,0,R,0,Math.PI*2,false);
+  const a=new THREE.Path(); a.absarc(0,0,axle,0,Math.PI*2,true); s.holes.push(a);
+  const p=new THREE.Path(); p.absarc(0,holeY,holeR,0,Math.PI*2,true); s.holes.push(p);
+  return extrude(s,depth);
 }
 
-CLS.forEach(cls=>{
-  const th = ANG[cls];
-  const pos = ringPos(th, R_RING);
-  /* 瓶底三层接口（L1/L2/L3 三个圆盘，L2 可转；孔为真实挖孔） */
-  const gate = new THREE.Group();
-  gate.position.copy(pos); gate.rotation.y = -RAD(th);
-  machine.add(gate);
-  const l1Mat = mat.disc1.clone(), l2Mat = mat.disc2.clone(), l3Mat = mat.disc3.clone();
-  const l1 = new THREE.Mesh(discGeo(DISC_R, HOLE_R, HOLE_D, 0, gateStack.l1d), l1Mat);
-  l1.position.y = gateStack.l1Bot;
-  const l3 = new THREE.Mesh(discGeo(DISC_R, HOLE_R, -HOLE_D, 0, gateStack.l3d), l3Mat);
-  l3.position.y = gateStack.l3Bot;
-  const l2Wrap = new THREE.Group(); l2Wrap.position.y = 0;
-  const l2 = new THREE.Mesh(discGeo(DISC_R, POCKET_R, HOLE_D, 0, gateStack.l2d), l2Mat);
-  l2.position.y = gateStack.l2Bot; l2Wrap.add(l2);
-  gate.add(l1, l3, l2Wrap);
-  l1.userData.partId='GATE-'+cls; l3.userData.partId='GATE-'+cls; l2.userData.partId='GATE-'+cls;
-  partMeshes.push(l1,l2,l3);
-  gates[cls] = { group:gate, l2:l2Wrap, l2Mat, l1Mat, l3Mat, a:90, xplode:0, expOff:{l1:0,l2:0,l3:0} };
-  addLabel('GATE-'+cls, '<b>GATE-'+cls+'</b> 三层接口 L1·L2·L3（共5组）',
-    ()=>pocketWorld(cls,0).add(new THREE.Vector3(0,2.6,0)));
-  addLabel('GATE-ABC-'+cls, 'L1 进料 / L2 定量隔离 / L3 出料',
-    ()=>pocketWorld(cls,0).add(new THREE.Vector3(0,1.2,-2.2)), );
-
-  /* 药瓶（透明）+ 观察线 + 内部演示胶囊 */
-  const gMat = mat.glass.clone();
-  const bottle = new THREE.Group(); bottle.position.copy(pos); machine.add(bottle);
-  const cyl = new THREE.Mesh(new THREE.CylinderGeometry(2.05, 2.05, 7.5, 28, 1, true), gMat);
-  cyl.position.y = 14.35 + 3.75; bottle.add(cyl);
-  const bCap = new THREE.Mesh(new THREE.TorusGeometry(2.05, .18, 10, 28), mat.rim);
-  bCap.rotation.x = Math.PI/2; bCap.position.y = 21.85; bottle.add(bCap);
-  const obsRing = new THREE.Mesh(new THREE.TorusGeometry(2.08, .07, 8, 28),
-    new THREE.MeshBasicMaterial({color:0x0d9488}));
-  obsRing.rotation.x = Math.PI/2; obsRing.position.y = 16.0; bottle.add(obsRing);
-  cyl.userData.partId='BIN-'+cls; partMeshes.push(cyl);
-  const capMat = new THREE.MeshStandardMaterial({color:CLS_COLOR_HEX[cls], roughness:.35});
-  const capsules = [];
-  for(let i=0;i<14;i++){
-    const c = new THREE.Mesh(capsuleGeo, capMat);
-    const ring = i<7 ? 0 : 1;
-    const ang = (i%7)/7*Math.PI*2 + (ring?0.45:0);
-    const rr = ring? 1.15 : 0.55;
-    c.position.set(Math.cos(ang)*rr, 15.4 + Math.floor(i/7)*1.15 + (i%3)*0.02, Math.sin(ang)*rr);
-    bottle.add(c); capsules.push(c);
-  }
-  bottles[cls] = { group:bottle, glassMat:gMat, capMat, capsules, stockN: iDefaultStock(cls) };
-  addLabel('BIN-'+cls, '<b>BIN-'+cls+'</b> 药瓶'+cls+'（'+{'A':'红','B':'蓝','C':'绿','D':'黄','E':'紫'}[cls]+'）',
-    ()=>new THREE.Vector3(pos.x, 22.2, pos.z));
-});
-function iDefaultStock(cls){ return {A:12,B:10,C:8,D:6,E:5}[cls]; }
-function setBottleStockVisual(cls, visibleN){
-  const b = bottles[cls];
-  b.capsules.forEach((c,i)=>{ c.visible = i < visibleN; });
-  b.stockN = visibleN;
-}
-
-/* --- 摄像头 + 支架 + 视场锥 --- */
-const camBodyMat = new THREE.MeshStandardMaterial({color:0x33424a, roughness:.4});
-const cam01 = new THREE.Group();
-const cam01Pole = new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,3.6,10), mat.gray);
-cam01Pole.position.set(3.6, 1.7+1.8, 2.6); machine.add(cam01Pole);
-const cam01Body = new THREE.Mesh(new THREE.BoxGeometry(.9,.6,1.2), camBodyMat);
-cam01Body.position.set(3.6, 5.6, 1.8); cam01Body.lookAt(0,2.9,0); machine.add(cam01Body);
-cam01Body.userData.partId='CAM-01'; partMeshes.push(cam01Body);
-const camLight1 = new THREE.Mesh(new THREE.BoxGeometry(1.4,.1,.9), new THREE.MeshStandardMaterial({color:0xfff6e0, emissive:0x777042}));
-camLight1.position.set(3.6, 7.4, 2.6); machine.add(camLight1);
-addLabel('CAM-01','CAM-01 药盒摄像头（USB→机外电脑）', ()=>new THREE.Vector3(3.6,6.4,1.8));
-const inv01 = new THREE.Group();
-const inv01Body = new THREE.Mesh(new THREE.BoxGeometry(.7,.5,.9), camBodyMat);
-inv01Body.position.set(0, 15.2, 14.8); inv01Body.lookAt(0,15.2,8); machine.add(inv01Body);
-inv01Body.userData.partId='INV-01'; partMeshes.push(inv01Body);
-addLabel('INV-01','INV-01 库存观察（只看正对一瓶）', ()=>new THREE.Vector3(0,15.9,14.8));
-/* 视场锥 */
-function viewCone(len, radius, color){
-  const m = new THREE.Mesh(new THREE.ConeGeometry(radius, len, 24, 1, true),
-    new THREE.MeshBasicMaterial({color, transparent:true, opacity:.12, side:THREE.DoubleSide}));
-  m.visible=false; return m;
-}
-const cone01 = viewCone(4.6, 2.6, 0x7c3aed);
-cone01.position.copy(cam01Body.position);
-cone01.lookAt(0,2.9,0); cone01.rotateX(-Math.PI/2); machine.add(cone01);
-const cone02 = viewCone(6.0, 2.4, 0x7c3aed);
-cone02.position.copy(inv01Body.position);
-cone02.lookAt(0,15.4,8.2); cone02.rotateX(-Math.PI/2); machine.add(cone02);
-
-/* --- 电子区（背面底座） + 外部笔记本/适配器 --- */
-const elecGroup = new THREE.Group(); machine.add(elecGroup);
-const ctrl01 = new THREE.Mesh(new THREE.BoxGeometry(2.6,.5,1.8), mat.pcbG);
-ctrl01.position.set(-4.8, 2.0, -9.6); machine.add(ctrl01); ctrl01.userData.partId='CTRL-01'; partMeshes.push(ctrl01);
-addLabel('CTRL-01','CTRL-01 主控 ESP32-S3（串行控制 5 路）', ()=>new THREE.Vector3(-4.8,3.0,-9.6));
-const drv01 = new THREE.Mesh(new THREE.BoxGeometry(2.4,.4,1.7), mat.pcbB);
-drv01.position.set(-1.2, 1.95, -10.0); machine.add(drv01); drv01.userData.partId='DRV-01'; partMeshes.push(drv01);
-addLabel('DRV-01','DRV-01 驱动板（示意，待选型）', ()=>new THREE.Vector3(-1.2,2.9,-10.0));
-const pwrTerm = new THREE.Mesh(new THREE.BoxGeometry(1.8,.6,1.4), mat.pwr);
-pwrTerm.position.set(2.6, 2.0, -9.8); machine.add(pwrTerm); pwrTerm.userData.partId='PWR-01'; partMeshes.push(pwrTerm);
-addLabel('PWR-01','PWR-01 供电端子（适配器在机外）', ()=>new THREE.Vector3(2.6,3.0,-9.8));
-/* 线材：绿=控制（驱动板→接口区）、橙=5V 入机、紫=摄像头 USB 出机 */
-const wireG = new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,8.6,8,1,true), mat.greenWire);
-wireG.position.set(-0.2, 5.8, -8.7); machine.add(wireG);
-const wireO = new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,4.4,8), mat.orangeWire);
-wireO.rotation.x = Math.PI/2.4; wireO.position.set(5.6, 1.2, -11.4); machine.add(wireO);
-const wireP = new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,16,8), mat.purpleWire);
-wireP.rotation.z = Math.PI/2; wireP.position.set(-4.5, 1.0, -18.5); machine.add(wireP);
-const adapter5v = new THREE.Mesh(new THREE.BoxGeometry(2.0,1.1,1.4), mat.dark);
-adapter5v.position.set(6.8, 1.1, -14.4); machine.add(adapter5v); adapter5v.userData.partId='PWR-01'; partMeshes.push(adapter5v);
-const pcBox = new THREE.Mesh(new THREE.BoxGeometry(4.4,.5,3.0), mat.gray);
-pcBox.position.set(-4.5, 0.9, -18.5); machine.add(pcBox);
-const pcScreen = new THREE.Mesh(new THREE.BoxGeometry(4.2,2.4,.18), mat.dark);
-pcScreen.position.set(-4.5, 2.3, -19.2); pcScreen.rotation.x = -0.22; machine.add(pcScreen);
-
-/* --- 拆解/复原（整机爆炸滑杆） --- */
-let explodeT = 0;
-function v(x,y,z){ return new THREE.Vector3(x,y,z); }
-const explodeParts = [
-  {node:lidGroup, base:v(0,0,13.8), dir:v(0,13,0)},
-  ...CLS.map(c=>({node:bottles[c].group, base:ringPos(ANG[c],R_RING), dir:ringPos(ANG[c],3.4).setY(12.5)})),
-  ...CLS.map(c=>({node:gates[c].group, base:ringPos(ANG[c],R_RING), dir:ringPos(ANG[c],4.6).setY(6.2)})),
-];
-function applyExplode(){
-  explodeT = (+$('explodeSlider').value)/100;
-  if(explodeT>0.02 && state.running && !state.paused){ state.paused = true; setPauseBtn(); log('拆解中：出药动作已暂停（拆解时不允许跨空中落料）','warn'); }
-  explodeParts.forEach(p=>{ p.node.position.copy(p.base).addScaledVector(p.dir, explodeT); });
-}
-/* 直接修正：l2Wrap 内 mesh 与分层偏移 */
-CLS.forEach(c=>{
-  const g = gates[c];
-  g.l1 = g.group.children[0]; g.l2m = g.l2.children[0]; g.l3m = g.group.children[1];
-});
-function applyGateExplodeReal(){
-  CLS.forEach(c=>{
-    const g = gates[c];
-    const t = state.gateSolo===c ? 1 : 0;
-    g.l1.position.y = gateStack.l1Bot + t*2.8;
-    g.l2m.position.y = gateStack.l2Bot + t*1.6 - t*0.0;
-    g.l3m.position.y = gateStack.l3Bot + t*0.6;
-  });
-}
-function setGateOpacity(g, op, cls){
-  [g.l1Mat, g.l2Mat, g.l3Mat].forEach(m=>{ m.transparent = op<1; m.opacity = op; });
-}
-/* 单瓶拆解调用整合 */
-function refreshGateSolo(){
-  applyGateExplodeReal();
-  const g0 = state.gateSolo;
-  CLS.forEach(c=>{
-    const solo = g0===c;
-    const op = g0 && !solo ? 0.22 : 1;
-    setGateOpacity(gates[c], op);
-    bottles[c].glassMat.opacity = (g0 && !solo) ? 0.06 : 0.28;
-    bottles[c].capMat.transparent = !!(g0 && !solo);
-    bottles[c].capMat.opacity = (g0 && !solo) ? 0.15 : 1;
-  });
-  if(g0){
-    subtitle(`单瓶接口拆解：GATE-${g0}（L1/L2/L3 分层示意）· 其余四组半透明（同结构共 5 组）`);
-    const p = ringPos(ANG[g0], R_RING);
-    controls.target.lerp(p.clone().setY(14), 0.35);
-  }
-}
-
-/* --- 视角预设 --- */
-const VIEWS = {
-  iso:   {p:[27,22,33], t:[0,13,0]},
-  front: {p:[0,13,40],  t:[0,13,0]},
-  back:  {p:[0,13,-40], t:[0,13,0]},
-  left:  {p:[-40,13,0], t:[0,13,0]},
-  right: {p:[40,13,0],  t:[0,13,0]},
-  top:   {p:[0,52,1.5], t:[0,8,0]},
-  lidtop:{p:[0,44,16],  t:[0,10,0]},
+const TUBE_R=1.7;
+const EXIT=0.95;
+const SPEC={
+  A:{x:-7,d:0.80,h:0.40,color:0xd64545,name:'A 管 · 示例片径 8 mm'},
+  B:{x:0,d:1.00,h:0.45,color:0x3b78c8,name:'B 管 · 示例片径 10 mm'},
+  C:{x:7,d:1.20,h:0.50,color:0x2f9d62,name:'C 管 · 示例片径 12 mm'},
 };
-let lidOpenT = 0, lidTarget = 0;
-function setView(name){
-  const vv = VIEWS[name]; if(!vv) return;
-  camera.position.set(...vv.p); controls.target.set(...vv.t);
-  lidTarget = (name==='lidtop') ? 1 : lidTarget;
-  if(name==='lidtop') lidTarget=1;
+const AXLE_Z=-1.5;
+const stations={};
+const machine=new THREE.Group();
+scene.add(machine);
+
+scene.add(new THREE.Mesh(new THREE.BoxGeometry(80,0.2,60), new THREE.MeshStandardMaterial({color:0xf3f1ea}))).position.y=-0.1;
+
+const base=new THREE.Mesh(new THREE.BoxGeometry(24,0.8,14), mat.wood);
+base.position.set(0,1.5,-1); machine.add(base);
+[[-11,-7],[11,-7],[-11,5],[11,5]].forEach(([x,z])=>{
+  const f=cyl(0.7,1.1,mat.dark); f.position.set(x,0.55,z); machine.add(f);
+});
+
+const bedShape=new THREE.Shape();
+bedShape.moveTo(-11,-5); bedShape.lineTo(11,-5); bedShape.lineTo(11,5); bedShape.lineTo(-11,5); bedShape.closePath();
+for(const x of [-7,0,7]){
+  const axle=new THREE.Path(); axle.absarc(x,1.5,0.16,0,Math.PI*2,true); bedShape.holes.push(axle);
+  const ex=x+Math.sin(EXIT)*TUBE_R;
+  const ez=AXLE_Z+Math.cos(EXIT)*TUBE_R;
+  const hole=new THREE.Path(); hole.absarc(ex,-ez,0.42,0,Math.PI*2,true); bedShape.holes.push(hole);
 }
-function refreshShell(){
-  const tr = $('tTransparent').checked;
-  mat.shell.opacity = tr? 0.14 : 1;
-  mat.shell.depthWrite = !tr;
-  mat.lid.opacity = tr? 0.14 : 1;
-  const sec = $('tSection').checked;
-  clipMats.forEach(m=>{ m.clippingPlanes = sec? [clipPlane] : null; });
+const bed=new THREE.Mesh(extrude(bedShape,0.3), mat.bed);
+bed.position.y=3.7; machine.add(bed);
+tag(bed,'bed');
+[[-10,-4],[10,-4],[-10,3],[10,3]].forEach(([x,z])=>{
+  const p=cyl(0.28,1.7,mat.alum); p.position.set(x,2.85,z); machine.add(p);
+});
+
+const holderShape=new THREE.Shape();
+holderShape.moveTo(-11,-3.2); holderShape.lineTo(11,-3.2); holderShape.lineTo(11,3.2); holderShape.lineTo(-11,3.2); holderShape.closePath();
+for(const id of ['A','B','C']){
+  const spec=SPEC[id];
+  const h=new THREE.Path();
+  h.absarc(spec.x, -0.2, spec.d/2+0.28, 0, Math.PI*2, true);
+  holderShape.holes.push(h);
+}
+const holder=new THREE.Mesh(extrude(holderShape,0.3), mat.bed);
+holder.position.y=7.4; machine.add(holder);
+[[-11,-4.6],[11,-4.6],[-11,2.6],[11,2.6]].forEach(([x,z])=>{
+  const p=cyl(0.35,5.5,mat.alum); p.position.set(x,4.65,z); machine.add(p);
+});
+
+function makeServo(pinH){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.2,2.15,2.3), mat.dark);
+  body.position.y=1.08; g.add(body); tag(body,'servo');
+  const earL=new THREE.Mesh(new THREE.BoxGeometry(0.35,0.12,0.7), mat.alum);
+  earL.position.set(-0.75,2.15,0); g.add(earL);
+  const earR=earL.clone(); earR.position.x=0.75; g.add(earR);
+  const horn=new THREE.Group(); horn.position.y=2.22;
+  const arm=new THREE.Mesh(new THREE.BoxGeometry(0.28,0.12,1.7), mat.white);
+  arm.position.z=0.7; horn.add(arm);
+  const pin=cyl(0.08,pinH,mat.metal); pin.position.set(0,pinH/2,1.45); horn.add(pin);
+  g.add(horn); g.userData.horn=horn;
+  return g;
 }
 
-/* --- 动画循环 --- */
-const activeCapsules = [];   // {mesh, phases:[{from,to,dur,onArrive,orient}] ...}
-const clock = new THREE.Clock();
-function makeCapsuleMesh(cls){
-  const m = new THREE.Mesh(capsuleGeo, new THREE.MeshStandardMaterial({color:CLS_COLOR_HEX[cls], roughness:.35}));
-  scene.add(m); return m;
-}
-function setStatusColor(hex){
-  statusLight.material.color.set(hex);
-  statusLight.material.emissive.set(hex);
-}
-function flashStatusLight(hex){
-  setStatusColor(hex); state.statusLightFlash = 1.2;
-}
-function pulseLine(id){
-  const el = $(id); if(!el) return;
-  el.style.strokeDasharray = '5 4';
-  el.animate([{strokeDashoffset:0},{strokeDashoffset:-36}], {duration:900, iterations:2});
-  sched(()=>{ el.style.strokeDasharray=''; }, 2000);
-}
-let tickCount=0;
-function stepTweens(){
-  const nowMs = performance.now();
-  for(let i=activeCapsules.length-1;i>=0;i--){
-    const c = activeCapsules[i];
-    if(c.last!=null) c.t += (nowMs-c.last);
-    c.last = nowMs;
-    const ph = c.phases[c.idx];
-    if(!ph){ finishActive(i); continue; }
-    const k = Math.min(1, c.t/ph.dur);
-    c.mesh.position.lerpVectors(ph.from, ph.to, ph.ease? ph.ease(k):k);
-    if(ph.orient) c.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), ph.orient);
-    else c.mesh.quaternion.identity();
-    if(k>=1){ c.t=0; c.idx++; if(ph.onArrive) ph.onArrive(); }
+for(const id of ['A','B','C']){
+  const spec=SPEC[id];
+  const root=new THREE.Group();
+  root.position.set(spec.x,0,AXLE_Z);
+  machine.add(root);
+  const axle=cyl(0.16,1.7,mat.metal); axle.position.y=4.15; root.add(axle);
+  const l2=new THREE.Group(); l2.position.y=3.95;
+  const grooveR=spec.d/2+0.06;
+  const l2mesh=new THREE.Mesh(fullDiscGeo(2.3,0.18,grooveR,-TUBE_R,spec.h+0.08), mat.l2);
+  l2.add(l2mesh); tag(l2mesh,'l2'); root.add(l2);
+  const l1=new THREE.Group(); l1.position.y=4.55;
+  const l1mesh=new THREE.Mesh(halfDiscGeo(2.3,0.18,0.2), mat.l1);
+  l1.add(l1mesh); tag(l1mesh,'l1'); root.add(l1);
+  const tubeH=11.5;
+  const tubeR=spec.d/2+0.18;
+  const tube=new THREE.Mesh(new THREE.CylinderGeometry(tubeR,tubeR,tubeH,28,1,true), mat.tube);
+  tube.position.set(0,4.85+tubeH/2,TUBE_R); root.add(tube); tag(tube,'tube');
+  const flange=new THREE.Mesh(new THREE.TorusGeometry(tubeR+0.05,0.08,8,24), mat.alum);
+  flange.rotation.x=Math.PI/2; flange.position.set(0,7.55,TUBE_R); root.add(flange);
+  const s1=makeServo(0.9); s1.position.set(4.15,1.92,0.2); s1.rotation.y=-Math.PI/2; root.add(s1);
+  const s2=makeServo(0.35); s2.position.set(-4.15,1.92,-0.2); s2.rotation.y=Math.PI/2; root.add(s2);
+  const pills=[];
+  const pillMat=new THREE.MeshStandardMaterial({color:spec.color,roughness:.4});
+  for(let i=0;i<8;i++){
+    const pill=new THREE.Mesh(new THREE.CylinderGeometry(spec.d/2,spec.d/2,spec.h,20), pillMat);
+    scene.add(pill); pills.push(pill);
   }
-  CLS.forEach(cl=>{
-    const g = gates[cl];
-    if(g.rotFrom!=null){
-      if(g.lastStamp!=null) g.rotT += (nowMs-g.lastStamp);
-      g.lastStamp = nowMs;
-      const k = Math.min(1, g.rotT/g.rotDur);
-      g.a = g.rotFrom + (g.rotTo-g.rotFrom)*k;
-      g.l2.rotation.y = -RAD(g.a);
-      if(g.carry){ g.carry.position.copy(pocketWorld(cl, g.a)); g.carry.position.y = POCKET_Y; }
-      if(k>=1){ g.rotFrom=null; if(g.rotDone) g.rotDone(); }
-    }
+  stations[id]={spec,root,l1,l2,s1,s2,pills,tubeR};
+  layoutStack(id);
+}
+function layoutStack(id){
+  const st=stations[id];
+  st.pills.forEach((p,i)=>{
+    p.position.set(st.spec.x, 4.78+st.spec.h/2+i*(st.spec.h+0.03), AXLE_Z+TUBE_R);
   });
 }
-setInterval(()=>{ try{ stepTweens(); }catch(e){ console.error(e); } }, 60);
-function animate(){
-  requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.06);
-  tickCount++;
-  /* 盖开合插值 */
-  lidOpenT += (lidTarget-lidOpenT)*Math.min(1,dt*4);
-  lidPivot.rotation.x = -lidOpenT*1.35;
-  /* 活动（下落中）胶囊与 L2 旋转由独立计时器 stepTweens 驱动（后台标签不被冻结） */
-  stepTweens();
-  /* 状态灯闪烁 / 常亮 */
-  if(state.statusLightFlash>0){ state.statusLightFlash-=dt;
-    statusLight.material.emissiveIntensity = 1.5+Math.sin(tickCount*0.6)*1.4; }
-  else{
-    statusLight.material.emissiveIntensity = 0.55;
-    const hex = (state.phase==='awaitingPickup'||state.phase==='partial')? 0x0d9488 :
-                (state.phase==='fault'||state.phase==='drawerOut'||state.phase==='connLost')? 0xdc2626 :
-                state.phase==='idle' ? 0x8b98a0 : 0x2563eb;
-    setStatusColor(hex);
-  }
-  /* 计数光束 */
-  const beamGlow = Math.max(0, state.beamFlash||0);
-  if(beamGlow>0){ state.beamFlash-=dt*2.5; beamMat.opacity = 0.22 + Math.max(0,state.beamFlash)*0.75; beamMat.color.set(0xff2211); }
-  else { beamMat.opacity=0.22; beamMat.color.set(0xff5544); }
-  /* 俯视悬浮提示标签 */
-  updateLabels();
-  controls.autoRotate = $('tAutoRot').checked;
-  controls.autoRotateSpeed = 1.6;
-  controls.update();
-  renderer.render(scene, camera);
-  /* 状态灯衰减由帧循环处理 */
-  if(state.statusLightFlash<= -0.0001 && (state.phase==='alarm')){ /* noop */ }
-}
-function finishActive(i){
-  const c = activeCapsules[i];
-  c.lastOnArrive&&c.lastOnArrive();
-  activeCapsules.splice(i,1);
-}
-const _wp = new THREE.Vector3();
-function updateLabels(){
-  const show = $('tLabels').checked;
-  const w = canvas.clientWidth, h = canvas.clientHeight;
-  labelAnchors.forEach(L=>{
-    const p = L.getPos(); _wp.copy(p).project(camera);
-    const visible = show && _wp.z < 1 && Math.abs(_wp.x)<1.1 && Math.abs(_wp.y)<1.1;
-    L.div.style.display = visible? 'block':'none';
-    if(visible){
-      L.div.style.left = Math.round((_wp.x*0.5+0.5)*w)+'px';
-      L.div.style.top  = Math.round((-_wp.y*0.5+0.5)*h - 6)+'px';
-    }
-  });
-}
-function resize(){
-  const wrap = $('canvasWrap');
-  const w = wrap.clientWidth, h = wrap.clientHeight;
-  renderer.setSize(w, h, false);
-  camera.aspect = w/h; camera.updateProjectionMatrix();
-}
-window.addEventListener('resize', resize);
 
-/* --- 点击拾取部件 --- */
-let pDown=null;
-canvas.addEventListener('pointerdown', e=>{ pDown=[e.clientX,e.clientY]; });
-canvas.addEventListener('pointerup', e=>{
-  if(!pDown) return;
-  const dx=e.clientX-pDown[0], dy=e.clientY-pDown[1]; pDown=null;
+const chute=new THREE.Mesh(new THREE.BoxGeometry(10,0.15,9.5), mat.slide);
+chute.position.set(0,2.55,4.6);
+chute.rotation.x=0.22;
+machine.add(chute); tag(chute,'chute');
+const chuteLip=new THREE.Mesh(new THREE.BoxGeometry(9.2,0.12,0.4), mat.alum);
+chuteLip.position.set(0,3.55,0.15); machine.add(chuteLip);
+
+const cup=new THREE.Group();
+cup.position.set(0,0,9.2);
+const cupWall=new THREE.Mesh(new THREE.CylinderGeometry(2.5,2.2,1.8,28,1,true), mat.cup);
+cupWall.position.y=0.9; cup.add(cupWall); tag(cupWall,'cup');
+const cupFloor=cyl(2.15,0.12,mat.cup); cupFloor.position.y=0.08; cup.add(cupFloor);
+machine.add(cup);
+
+const camPost=new THREE.Mesh(new THREE.BoxGeometry(0.4,6,0.4), mat.alum);
+camPost.position.set(-8,4.2,6.2); machine.add(camPost);
+const camArm=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.35,4.2), mat.alum);
+camArm.position.set(-8,7.2,8.1); machine.add(camArm);
+const cam=new THREE.Mesh(new THREE.BoxGeometry(1.3,1.1,2.4), mat.dark);
+cam.position.set(-6.6,6.5,9.0); cam.lookAt(0,1.2,9.2); machine.add(cam); tag(cam,'cam');
+const camCable=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,8,8), new THREE.MeshStandardMaterial({color:0x6d28d9}));
+camCable.rotation.z=Math.PI/2; camCable.position.set(-4,0.15,6.2); machine.add(camCable);
+
+const mcu=new THREE.Mesh(new THREE.BoxGeometry(2.6,0.35,5.2), mat.green);
+mcu.position.set(4.2,2.15,-5.4); machine.add(mcu); tag(mcu,'mcu');
+const drv=new THREE.Mesh(new THREE.BoxGeometry(2.5,0.3,6.2), mat.blue);
+drv.position.set(-3.5,2.12,-5.5); machine.add(drv); tag(drv,'drv');
+const cap=cyl(0.45,1.1,mat.dark); cap.position.set(-6.2,2.5,-5.2); machine.add(cap);
+for(let i=0;i<4;i++){
+  const w=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,6.2,6), mat.orange);
+  w.rotation.z=Math.PI/2; w.position.set(0.4,2.08,-4.3-i*0.18); machine.add(w);
+}
+
+const brick=new THREE.Mesh(new THREE.BoxGeometry(4.2,2.2,2.4), mat.black);
+brick.position.set(16,1.1,-4); scene.add(brick); tag(brick,'pwr');
+const laptop=new THREE.Mesh(new THREE.BoxGeometry(7,0.4,5), mat.dark);
+laptop.position.set(17,0.4,3); scene.add(laptop);
+const usb=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,8,8), mat.blue);
+usb.rotation.z=Math.PI/2; usb.position.set(12,0.2,-1); scene.add(usb);
+
+const views={
+  iso:{p:[26,20,26],t:[0,6,0]},
+  front:{p:[0,9,20],t:[0,5,1]},
+  top:{p:[0,18,16],t:[0,4,1]},
+  side:{p:[28,10,2],t:[0,5,0]},
+  wire:{p:[8,16,-22],t:[2,3,-2]},
+};
+function setView(n){ const v=views[n]; camera.position.set(...v.p); controls.target.set(...v.t); controls.update(); }
+document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+
+let explode=0;
+$('explode').oninput=()=>{
+  explode=(+$('explode').value)/100;
+  holder.position.y=7.4+explode*6;
+  for(const id of ['A','B','C']){
+    const st=stations[id];
+    st.root.children.forEach(()=>{});
+    const tube=st.root.children.find(o=>o.userData&&o.userData.part==='tube');
+    if(tube) tube.position.y=4.85+11.5/2+explode*6;
+    st.l1.position.y=4.55+explode*3.2;
+    st.l2.position.y=3.95+explode*1.5;
+    layoutStack(id);
+  }
+  if(explode>0.02) sub('拆开看的时候圆片被拉开了，这是拆解，不是装配状态。滑杆回到 0 才算装好。');
+  else sub('');
+};
+$('tShell').onchange=e=>{
+  mat.tube.opacity=e.target.checked?0.28:0.04;
+};
+$('tSpin').onchange=e=>{ controls.autoRotate=e.target.checked; };
+
+const state={busy:false,cup:[],token:0};
+function counts(){
+  const rows=[['管','管里','药杯']];
+  for(const id of ['A','B','C']){
+    rows.push([id, stations[id].pills.length, state.cup.filter(p=>p.id===id).length]);
+  }
+  $('cnt').innerHTML=rows.map((r,i)=>`<tr>${r.map(c=>i?`<td>${c}</td>`:`<th>${c}</th>`).join('')}</tr>`).join('');
+  $('btnTake').disabled=state.cup.length===0;
+  $('stateLine').textContent = state.busy ? '正在出一片，其他按钮先别按' : '空闲。闸板默认是关，药柱压在实心半圆上';
+}
+function placeCup(){
+  state.cup.forEach((p,i)=>{
+    const a=i/Math.max(state.cup.length,1)*Math.PI*2;
+    p.mesh.position.set(Math.cos(a)*0.8, 0.25+p.mesh.geometry.parameters.height/2, 9.2+Math.sin(a)*0.7);
+    p.mesh.rotation.set(0,0,0);
+  });
+}
+function sleep(ms){
+  const tk=state.token;
+  return new Promise((res,rej)=>{
+    const t0=performance.now();
+    const step=()=>{
+      if(tk!==state.token){ rej(new Error('reset')); return; }
+      if(performance.now()-t0>=ms) res();
+      else setTimeout(step,30);
+    };
+    step();
+  });
+}
+function tweenYaw(group,to,ms){
+  const tk=state.token, from=group.rotation.y, t0=performance.now();
+  return new Promise((res,rej)=>{
+    const step=()=>{
+      if(tk!==state.token){ rej(new Error('reset')); return; }
+      const k=Math.min(1,(performance.now()-t0)/ms);
+      group.rotation.y=from+(to-from)*k;
+      if(k<1) setTimeout(step,30); else res();
+    };
+    step();
+  });
+}
+function tweenObj(mesh,to,ms){
+  const tk=state.token, from=mesh.position.clone(), t0=performance.now();
+  return new Promise((res,rej)=>{
+    const step=()=>{
+      if(tk!==state.token){ rej(new Error('reset')); return; }
+      const k=Math.min(1,(performance.now()-t0)/ms);
+      mesh.position.lerpVectors(from,to,k);
+      if(k<1) setTimeout(step,30); else res();
+    };
+    step();
+  });
+}
+function holeLocalY(st){ return 0; }
+function grooveWorld(st){
+  const v=new THREE.Vector3(0, (st.spec.h+0.08)/2, TUBE_R);
+  st.l2.localToWorld(v);
+  return v;
+}
+
+async function dispense(id){
+  if(state.busy){ log('上一次还没转完，这次按键不算'); return; }
+  if(explode>0.02){ log('还拆着，先把滑杆拉回 0'); return; }
+  const st=stations[id];
+  if(!st.pills.length){ log(id+' 管已经空了'); return; }
+  state.busy=true; counts();
+  const pill=st.pills.shift();
+  try{
+    sub(id+'：第一层转到开，空的半边让到药管下面');
+    log(id+' 第一层打开');
+    st.s1.userData.horn.rotation.y=0;
+    await tweenYaw(st.l1, Math.PI, 520);
+    st.s1.userData.horn.rotation.y=Math.PI;
+    sub(id+'：一片掉进第二层凹槽，底板托住，上面的药还在管里');
+    const g=grooveWorld(st);
+    await tweenObj(pill, g, 320);
+    st.l2.attach(pill);
+    sub(id+'：第一层转回关，实心半边重新托住药柱');
+    log(id+' 第一层关闭，药柱被挡住');
+    await tweenYaw(st.l1, 0, 520);
+    layoutStack(id);
+    st.s1.userData.horn.rotation.y=0;
+    sub(id+'：第二层把凹槽转到出药孔上');
+    log(id+' 凹槽对准出药孔');
+    await tweenYaw(st.l2, EXIT, 640);
+    st.s2.userData.horn.rotation.y=EXIT;
+    scene.attach(pill);
+    sub(id+'：药片沿斜滑道进药杯');
+    const slot=state.cup.length;
+    const a=slot*1.2;
+    await tweenObj(pill, new THREE.Vector3(Math.cos(a)*0.7, 0.2+st.spec.h/2, 8.6), 280);
+    await tweenObj(pill, new THREE.Vector3(Math.cos(a)*0.8, 0.25+st.spec.h/2, 9.2+Math.sin(a)*0.6), 360);
+    state.cup.push({id,mesh:pill});
+    log(id+' 已进药杯，可以用手拿走');
+    await tweenYaw(st.l2, 0, 480);
+    st.s2.userData.horn.rotation.y=0;
+    sub('');
+  }catch(e){ /* reset */ }
+  state.busy=false; counts();
+}
+
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>dispense(b.dataset.go));
+$('btnRound').onclick=async()=>{
+  if(state.busy) return;
+  for(const id of ['A','A','B','C']){
+    if(!stations[id].pills.length) continue;
+    await dispense(id);
+  }
+};
+$('btnTake').onclick=()=>{
+  if(!state.cup.length) return;
+  const p=state.cup.pop();
+  scene.remove(p.mesh);
+  log('从药杯拿走 1 片（'+p.id+'）。这只表示杯子空了一片，不表示已经服下');
+  placeCup(); counts();
+};
+$('btnReset').onclick=()=>{
+  state.token++;
+  state.busy=false;
+  state.cup.splice(0).forEach(p=>scene.remove(p.mesh));
+  for(const id of ['A','B','C']){
+    const st=stations[id];
+    st.l1.rotation.y=0; st.l2.rotation.y=0;
+    st.s1.userData.horn.rotation.y=0; st.s2.userData.horn.rotation.y=0;
+    st.pills.splice(0).forEach(p=>scene.remove(p));
+    const pillMat=new THREE.MeshStandardMaterial({color:st.spec.color,roughness:.4});
+    for(let i=0;i<8;i++){
+      const pill=new THREE.Mesh(new THREE.CylinderGeometry(st.spec.d/2,st.spec.d/2,st.spec.h,20), pillMat);
+      scene.add(pill); st.pills.push(pill);
+    }
+    layoutStack(id);
+  }
+  $('explode').value=0; $('explode').oninput();
+  sub(''); log('已复位。闸板关着，药杯清空'); counts();
+};
+
+canvas.addEventListener('pointerdown',e=>{ canvas._p=[e.clientX,e.clientY]; });
+canvas.addEventListener('pointerup',e=>{
+  if(!canvas._p) return;
+  const dx=e.clientX-canvas._p[0], dy=e.clientY-canvas._p[1];
   if(dx*dx+dy*dy>36) return;
-  const rect=canvas.getBoundingClientRect();
-  const m = new THREE.Vector2(((e.clientX-rect.left)/rect.width)*2-1, -((e.clientY-rect.top)/rect.height)*2+1);
-  const rc = new THREE.Raycaster(); rc.setFromCamera(m, camera);
-  const hits = rc.intersectObjects(partMeshes, false);
-  if(hits.length){ showPartCard(hits[0].object.userData.partId); }
+  const r=canvas.getBoundingClientRect();
+  const ndc=new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+  const ray=new THREE.Raycaster(); ray.setFromCamera(ndc,camera);
+  const hit=ray.intersectObjects(clickable,false)[0];
+  if(!hit) return;
+  const id=hit.object.userData.part;
+  $('partBox').innerHTML='<b>'+({tube:'药管',l1:'第一层闸板',l2:'第二层凹槽',bed:'出药底板',servo:'舵机',cup:'药杯',cam:'摄像头',mcu:'ESP32-S3',drv:'PCA9685',pwr:'5V 适配器',chute:'斜滑道'}[id]||id)+'</b><br>'+(PARTS[id]||'');
 });
 
-function showPartCard(id){
-  if(!id) return;
-  let key = id;
-  if(id==='BTN-01'||id==='BTN-02'){ key='ALM-01'; }
-  if(!PARTS[key]){ const m=id.match(/^GATE-([A-E])/); if(m) key='GATE-'+m[1]; const b=id.match(/^BIN-([A-E])/); if(b) key='BIN-'+b[1]; }
-  const P = PARTS[key]; if(!P) return;
-  const card = $('partCard'); card.style.display='block';
-  card.innerHTML = `<h4>[${key}] ${P.name||''}</h4>` +
-    `<div class="kv"><b>数量：</b>${P.qty||'—'}</div>`+
-    `<div class="kv"><b>作用：</b>${P.use||P.sub||''}</div>`+
-    (P.pos?`<div class="kv"><b>位置：</b>${P.pos}</div>`:'')+
-    (P.iface?`<div class="kv"><b>接口：</b>${P.iface}</div>`:'')+
-    `<div class="kv"><b>状态：</b>${P.st||''}</div>`;
+function resize(){
+  const w=canvas.clientWidth||canvas.parentElement.clientWidth, h=canvas.clientHeight||canvas.parentElement.clientHeight;
+  renderer.setSize(w,h,false); camera.aspect=w/Math.max(h,1); camera.updateProjectionMatrix();
 }
-window.showPartCard = showPartCard;
-
-/* =============== 4. 状态机与流程 =============== */
-function sleep(ms){ // 可暂停 / 可中止的等待
-  const tk = state.runToken;
-  return (async ()=>{
-    let waited=0;
-    while(waited<ms){
-      if(tk!==state.runToken) throw ABORT;
-      while(state.paused){ await rawSleep(80); if(tk!==state.runToken) throw ABORT; if(state.explodeStop) throw ABORT; }
-      await rawSleep(Math.min(60, ms-waited)); waited+=60;
-    }
-  })();
+addEventListener('resize',resize);
+function loop(){ requestAnimationFrame(loop); controls.update(); renderer.render(scene,camera); }
+resize(); loop(); setView('iso'); counts();
+log('模型已按可拼装的结构摆好：药管插在板上，两层圆片躺在底板上，药杯放在桌上。');
+log('采购合计 '+sum+' 元。摄像头是绿联 CM925，USB 接电脑。');
+}catch(e){ console.error(e); fail(e); }
 }
-function rotL2(cls, toA, dur){ // 暂定原理动画：L2 圆盘转位
-  const g = gates[cls];
-  if(!$('tPrinciple').checked){
-    /* 未开启转盘动画：仅高亮讲解；出药演示需要动作，自动临时启用并公示 */
-    return (async()=>{ log(`${cls} 接口：L2 暂定转位（运动方案待验证，本次演示自动启用暂定动画）`,'warn'); })();
-  }
-  return new Promise((res, rej)=>{
-    g.rotFrom = g.a; g.rotTo = toA; g.rotT = 0; g.lastStamp = null;
-    g.rotDur = Math.max(60, dur*(state.slowMo?2.4:1)*SPEED);
-    g.rotDone = ()=>{ if(state.runToken!==undefined){} res(); };
-  });
-}
-function capAnim(mesh, pos, dur, onArrive, orient){
-  const ph={from:mesh.position.clone(), to:pos.clone(), dur:Math.max(50,dur*(state.slowMo?2.6:1)*SPEED), onArrive, orient};
-  mesh.position.copy(ph.from);
-  activeCapsules.push({mesh, phases:[ph], idx:0, t:0, last:null});
-  return new Promise(res=>{ ph.resolve=res; const old=ph.onArrive; ph.onArrive=()=>{ old&&old(); res(); }; });
-}
-function gateL2Highlight(cls, active, layer){
-  const g = gates[cls];
-  g.l1Mat.emissive.set(layer==='L1'?0x2fbf71:0x000000);
-  g.l2Mat.emissive.set(layer==='L2'?0xd9841d:0x000000);
-  g.l3Mat.emissive.set(layer==='L3'?0x2fbf71:0x000000);
-  if(active) CLS.forEach(c=>{ if(c!==cls){ gates[c].l1Mat.emissive.set(0); gates[c].l2Mat.emissive.set(0); gates[c].l3Mat.emissive.set(0);} });
-}
-
-/* 一个完整机械周期：接料→隔离→出料→复位 */
-async function cycleOne(cls, opt={}){
-  const tk = state.runToken;
-  opt = opt||{};
-  const gate = gates[cls];
-  const P1 = pocketWorld(cls, 0), PD = pocketWorld(cls, 180);
-  let pulses = 0;
-  const doCount = ()=>{ pulses++; state.beamFlash=1; optoAdd(cls); };
-  let carry = null;
-  const dropCase = opt.dropCase;
-
-  /* 关闭状态：a=90（L1/L3 孔均未对准，上下不通） */
-  const spawnCapsule = opt.noDrop? 0 : (dropCase==='double'? 2 : 1);
-  const caps = [];
-  for(let i=0;i<spawnCapsule;i++) caps.push(makeCapsuleMesh(cls));
-
-  /* 1 接料：L2 对准 L1 孔，胶囊进入定量腔（底部被 L3 实心区托住） */
-  subtitle(`${cls} 路 · 步骤1 接料：L2 对孔，1 粒进入定量腔（暂定原理动画）`);
-  gateL2Highlight(cls, true, 'L2');
-  await sleep(160);
-  await rotL2(cls, 0, 480);
-  if(tk!==state.runToken) { caps.forEach(c=>scene.remove(c)); throw ABORT; }
-  for(let i=0;i<caps.length;i++){
-    caps[i].position.copy(P1); caps[i].position.y = 15.6 - i*0.8;
-    capAnim(caps[i], new THREE.Vector3(P1.x, POCKET_Y + (caps.length>1? -i*0.9:0), P1.z), 520, null);
-  }
-  await sleep(650*(state.slowMo?2.4:1)*SPEED);
-  for(let i=0;i<caps.length;i++){ const ci=activeCaptured(caps[i]); if(ci>=0){ activeCapsules.splice(ci,1); caps[i].position.set(P1.x, POCKET_Y - i*0.9, P1.z);} }
-
-  /* 2 隔离：L2 转回中位，封住上层进料口；胶囊被带在腔内 */
-  subtitle(`${cls} 路 · 步骤2 隔离：封住上游，移动中上下孔不贯通`);
-  gateL2Highlight(cls, true, 'L2');
-  gate.carry = caps[0];
-  await rotL2(cls, 90, 620);
-  gate.carry = null;
-  /* 3 出料：L2 对准 L3 孔，胶囊经出料孔落下 */
-  subtitle(`${cls} 路 · 步骤3 出料：L2 对准下孔，胶囊落向汇流漏斗`);
-  gateL2Highlight(cls, true, 'L3');
-  await rotL2(cls, 180, 620);
-  if(tk!==state.runToken){ caps.forEach(c=>scene.remove(c)); throw ABORT; }
-  const slopeStart = [];
-  for(let i=0;i<caps.length;i++){
-    const sx = PD.x*(1-0.06*i), sz = PD.z*(1-0.06*i);
-    const r = Math.hypot(sx,sz);
-    const coneY = 7.0 + (Math.max(0, r-2.2)/9.4)*4.3;
-    caps[i].position.set(sx, POCKET_Y, sz);
-    capAnim(caps[i], new THREE.Vector3(sx, coneY+0.35, sz), 420, null);
-    slopeStart.push({dir:new THREE.Vector3(-sx, coneY+0.35-7.0, -sz).normalize()});
-  }
-  if(opt.drawerMidAt==='funnel-slide'){ // 故障注入：此刻抽出药盒（该粒继续完成）
-    setDrawer(true, true);
-  }
-  await sleep(560*(state.slowMo?2.4:1)*SPEED);
-  /* 4 复位：L2 回到中位 */
-  subtitle(`${cls} 路 · 步骤4 复位：接口回位，其余药路保持关闭`);
-  gateL2Highlight(cls, true, null);
-  rotL2(cls, 90, 620); // 不等待，与下滑并行
-  /* 胶囊沿真实斜面滑向中央出口 */
-  for(let i=0;i<caps.length;i++){
-    const c = caps[i];
-    const r0 = Math.hypot(c.position.x, c.position.z);
-    const az0 = {x:c.position.x, z:c.position.z};
-    const tubeX = (i - (caps.length-1)/2)*0.5;
-    await capAnim(c, new THREE.Vector3(tubeX*0.6, 7.0-0.15, (caps.length>1? tubeX*0.4:0)*Math.sign(az0.z||1)), 760, null,
-      slopeStart[i].dir);
-  }
-  /* 穿过计数光束：胶囊实际穿越光束才计脉冲（每粒 1 个完整遮挡/恢复） */
-  for(let i=0;i<caps.length;i++){ state.beamFlash=1; optoAdd(cls); }
-  /* 落入药盒 */
-  for(let i=0;i<caps.length;i++){
-    const c = caps[i];
-    const dx = (Math.sin((i+1)*2.1))*1.1, dz = (Math.cos((i+1)*1.7))*0.9;
-    await capAnim(c, new THREE.Vector3(dx, 3.0, dz), 380, ()=>{
-      c.quaternion.identity();
-      if(state.drawerOut){
-        scene.add(c); c.position.set(dx, 2.2, dz);
-        state.tray.push({cls, mesh:c, stray:true});
-        log('在途胶囊已在药盒抽出后落至轨道位置：记为待人工核对','warn');
-      } else {
-        trayGroup.add(c);
-        c.position.set(dx, 2.75, dz);
-        state.tray.push({cls, mesh:c});
-      }
-    });
-  }
-  if(opt.noDrop){ /* 该周期无胶囊：零脉冲，记录漏出，进入核验 */ }
-  gateL2Highlight(cls, false, null);
-  return { pulses: opt.noDrop? 0 : caps.length };
-}
-function activeCaptured(mesh){
-  return activeCapsules.findIndex(a=>a.mesh===mesh);
-}
-function optoAdd(cls){
-  state.opto[cls]++; refreshVecTable();
-  log(`${cls} 路光电计数 +1（胶囊实际穿越光束）→ 累计 ${state.opto[cls]}`);
-}
-
-/* ---- 目标/光电/视觉 表 ---- */
-function refreshVecTable(){
-  const t = state.task? state.task.targets : state.targets;
-  const v = state.vision;
-  let html = '<tr><th>类别</th><th>目标</th><th>光电</th><th>视觉(模拟)</th></tr>';
-  CLS.forEach(c=>{
-    const cl = state.opto[c]===v[c] && state.opto[c]===t[c] ? 'ok' : (state.opto[c]!==v[c]? 'bad':'');
-    html+=`<tr><td><span style="color:${CLS_COLOR[c]}">■</span> ${c}</td><td>${t[c]}</td><td class="${cl}">${state.opto[c]}</td><td class="${state.opto[c]!==v[c]?'bad':''}">${v[c]}</td></tr>`;
-  });
-  $('vecTable').innerHTML=html;
-}
-
-/* ---- 药盒抽屉 ---- */
-let trayZ = 0;
-function setDrawer(out, fromFault){
-  if(state.drawerOut===out) return;
-  state.drawerOut = out;
-  const msg = out? (fromFault?'药盒被抽出（模拟取药动作）：停止新的送料动作'
-    :'药盒抽出：在位信号断开，停止新的送料')
-    :'药盒放回：需明确确认后继续，未完成部分不自动补齐';
-  log(msg, out?'warn':'ok');
-  phoneNotify(out? '药盒已抽出，设备暂停出药':'药盒已放回，等待确认', out);
-  const target = out? 11.0 : 0;
-  const step = ()=>{
-    trayZ += (target-trayZ)*0.18;
-    trayGroup.position.z = trayZ;
-    if(Math.abs(trayZ-target)>0.05) requestAnimationFrame(step);
-  }; step();
-  if(out){ state.pickupStarted = true; }   // 一旦取药动作发生，本任务永不自动补发
-  refreshUI();
-}
-$('btnReturnDrawer').addEventListener('click', ()=>{ setDrawer(false); $('btnConfirmDrawer').style.display=''; $('btnReturnDrawer').style.display='none'; });
-$('btnConfirmDrawer').addEventListener('click', ()=>{
-  state.drawerConfirmed = true;
-  log('用户确认药盒已放回；已在途/已落粒记为待人工核对，未自动补齐', 'ok');
-  phoneNotify('药盒已确认放回');
-  $('btnConfirmDrawer').style.display='none';
-  if(state.phase==='drawerOut'){ state.phase='awaitingPickup'; startReminder(); log('转等待取药（本任务不再自动补发）'); }
-  refreshUI();
-});
-
-/* ---- 提醒链（300 秒，演示加速 10 秒，全程标注） ---- */
-function startReminder(){
-  if(state.reminderOn) return;
-  state.reminderOn = true;
-  $('badge2').style.display='block';
-  const tick = ()=>{
-    if(!state.reminderOn) return;
-    if(state.phase==='awaitingPickup'||state.phase==='partial'){
-      log('【提醒】药已备好尚未取走（真实间隔 300 秒；当前为演示加速 10 秒）','warn');
-      phoneNotify('【提醒】请取药（真实间隔300秒，演示加速为10秒）', true);
-      beep(880,0.18,2); flashStatusLight('#b45309');
-    }
-    sched(tick, REMIND_DEMO_MS);
-  };
-  sched(tick, REMIND_DEMO_MS);
-  $('remindInfo').textContent='提醒已启用：真实间隔 300 秒（页面演示加速为 10 秒，画面已标注）。提醒不触发出药。';
-}
-function stopReminder(){
-  state.reminderOn=false;
-  $('badge2').style.display='none';
-  $('remindInfo').textContent='';
-}
-
-/* ---- 视觉核验（模拟） ---- */
-async function verifyPhase(){
-  const tk = state.runToken;
-  state.phase='verifying'; refreshUI();
-  subtitle('全部完成，等待药盒稳定后 CAM-01 模拟拍照核验');
-  await sleep(900);
-  drawVisionPanel(true);
-  const vision = {};
-  CLS.forEach(c=> vision[c] = state.tray.filter(t=>t.cls===c&&!t.stray).length);
-  const T = state.task;
-  /* 场景注入的视觉差异 */
-  if(T.adjustVision) CLS.forEach(c=> vision[c]+= T.adjustVision[c]||0);
-  state.vision = vision; refreshVecTable();
-  log('视觉核验（模拟，预设数据）：'+CLS.map(c=>`${c}:${vision[c]}`).join(' '));
-  if(T.inject==='wrongColor'){
-    const wrong = CLS.find(c=>vision[c]>0 && T.targets[c]===0) || 'D';
-    state.phase='fault'; refreshUI();
-    log(`视觉核验发现异色/类别异常（${wrong} 区域低置信度）：停止并提醒人工处理，不自动清除或补齐`,'bad');
-    phoneNotify('核验异常：类别不符/低置信，请人工核对', true);
-    beep(660,0.25,3); flashStatusLight('#dc2626');
-    return;
-  }
-  /* 冲突检测：光电与视觉不一致 → 不补 */
-  let conflict = null;
-  for(const c of CLS){ if(state.opto[c]!==vision[c]){ conflict=c; break; } }
-  if(conflict){
-    state.phase='fault'; refreshUI();
-    log(`结果冲突（${conflict} 光电 ${state.opto[conflict]} ≠ 视觉 ${vision[conflict]}）：可能遮挡/异常，请核对。不自动补发`,'bad');
-    phoneNotify('光电计数与视觉数量冲突，请人工核对', true);
-    beep(660,0.25,3); flashStatusLight('#dc2626');
-    return;
-  }
-  /* 多余检测 */
-  const extra = CLS.find(c=> vision[c]>T.targets[c]);
-  if(extra){
-    state.phase='fault'; refreshUI();
-    log(`多余：${extra} 多出 ${vision[extra]-T.targets[extra]} 粒。停止并提示人工处理；多余胶囊留在盒内（不可自动回收）`,'bad');
-    phoneNotify('出药多于目标，请人工处理', true);
-    beep(660,0.25,3); flashStatusLight('#dc2626');
-    return;
-  }
-  /* 缺少检测（两路一致才可一次有限补发；已开始取药则不补） */
-  const missing = CLS.filter(c=> vision[c]<T.targets[c]);
-  if(missing.length){
-    if(state.pickupStarted || state.drawerOut){
-      log('存在缺少，但取药已开始（或药盒离位）：本任务永不自动补发，转人工核对','warn');
-      state.phase='awaitingPickup'; startReminder(); refreshUI(); return;
-    }
-    const fixable = missing.filter(c=> T.targets[c]-vision[c]===1 && state.opto[c]===vision[c]);
-    const unfix = missing.filter(c=> !fixable.includes(c));
-    if(unfix.length){
-      log(`缺少数量超过单次补发上限（${unfix.join(',')}）：停止并转人工处理`,'bad');
-      state.phase='fault'; refreshUI(); return;
-    }
-    if(missing.length===0){ /* no */ }
-    for(const c of fixable){
-      if(T.corrUsed[c]){ log(`${c} 已用完补发机会：停止并转人工处理`,'bad'); state.phase='fault'; refreshUI(); return; }
-      T.corrUsed[c]=true;
-      state.phase='correcting'; refreshUI();
-      log(`${c} 缺 1 粒且光电、视觉一致 → 允许每瓶每任务一次的有限补发（1 粒）`, 'warn');
-      subtitle(`有限补发：${c} ×1（每瓶每任务最多一次）`);
-      await sleep(500);
-      const res = await cycleOne(c, {dropCase:'normal'});
-      await sleep(CHANNEL_CLEAR_MS);
-      log(`通道清空确认（演示参数 ${CHANNEL_CLEAR_MS}ms）后复核`);
-    }
-    /* 重新核验 */
-    subtitle('补发完成，重新拍照核验');
-    await sleep(800);
-    const v2={}; CLS.forEach(c=> v2[c]=state.tray.filter(t=>t.cls===c&&!t.stray).length);
-    for(const c of CLS){ if(state.opto[c]!==v2[c]){ state.vision=v2; refreshVecTable();
-      log(`复核冲突（${c}）：停止，请人工核对`,'bad'); state.phase='fault'; refreshUI(); return; } }
-    state.vision=v2; refreshVecTable();
-    const still = CLS.filter(c=> v2[c]<T.targets[c]);
-    if(still.length){ log(`补发后仍缺少（${still.join(',')}）：停止，转人工处理`,'bad'); state.phase='fault'; refreshUI(); return; }
-  }
-  log('核验通过（模拟视觉 + 光电一致）：等待用户取药', 'ok');
-  state.phase='awaitingPickup'; startReminder(); refreshUI();
-  drawVisionPanel(false);
-}
-
-/* ---- 主流程 ---- */
-async function runTask(inject){
-  if(state.running){ log('已忽略：当前已有任务在执行（防重复出药，commandId 只下发一次）','warn'); return; }
-  const targets = {};
-  let bad=false;
-  CLS.forEach(c=>{ const n = parseInt($('qty'+c).value||0); targets[c] = Math.max(0,Math.min(5,n)); $('qty'+c).value=targets[c]; });
-  state.targets = {...targets};
-  state.opto = {A:0,B:0,C:0,D:0,E:0};
-  state.vision = {A:0,B:0,C:0,D:0,E:0};
-  state.tray.forEach(t=>{ (t.mesh.parent||scene).remove(t.mesh); }); state.tray=[]; drawVisionPanel(false);
-
-  const id = 'CMD-'+String(++cmdCounter).padStart(3,'0');
-  state.task = { id, targets, corrUsed:{}, inject: inject||null };
-  state.running=true; state.pickupStarted=false; state.drawerConfirmed=!state.drawerOut;
-  const tk = ++state.runToken;
-  log(`下发任务 ${id}：${CLS.map(c=>c+':'+targets[c]).join(' ')}（经服务器校验生成 commandId，设备接收并排队）`,'ok');
-  pulseLine('lnPhone'); pulseLine('lnSvr');
-  state.phase='checking'; refreshUI();
-  setTimeline('check');
-
-  if(state.mode==='real'){
-    /* 实物模式：无连接配置时明确显示未连接；不假装执行 */
-    state.phase='awaitingDevice'; refreshUI(); updateChipDevice();
-    log('实物模式：设备【未连接】。任务已生成，等待设备回报；动画不会执行，也不会把模拟当作成功。','warn');
-    phoneNotify('任务已发送，等待设备确认（未连接）', true);
-    state.running=false;
-    return;
-  }
-  /* 预检查：药盒在位、画面可用 */
-  await sleep(400);
-  if(state.drawerOut){ log('预检查失败：药盒不在位，任务拒绝执行','bad'); state.phase='idle'; state.task=null; state.running=false; refreshUI(); return; }
-  log('预检查通过：药盒在位（SW-01）、CAM-01 可用、指令编号唯一。主控排队 A→E 串行执行，同一时间仅一路动作','ok');
-  state.phase='dispensing'; refreshUI();
-
-  try{
-    const order = [...CLS];
-    for(const c of order){
-      const T = state.task;
-      if(tk!==state.runToken) throw ABORT;
-      if(T.targets[c]===0){ setTimeline('skip', c); log(`${c} 目标 0：跳过该路`); continue; }
-      setTimeline('disp', c);
-      $('chipRoute').textContent = `药路：${c}（其余关闭）`;
-      const needVis = T.targets[c];
-      let got = 0, noDropUsed=false;
-      for(let k=1;k<=needVis;k++){
-        if(tk!==state.runToken) throw ABORT;
-        if(state.drawerOut){
-          state.phase='drawerOut'; refreshUI();
-          log('药盒离位：中止新的送料周期。已在落下途中的粒子将继续显示并记为待人工核对','bad');
-          throw ABORT;
-        }
-        const T2 = state.task;
-        const opt = {};
-        if(T2.inject==='noDrop' && c==='A' && k===2) opt.noDrop = true;
-        if(T2.inject==='double' && c==='B') opt.dropCase = 'double';
-        if(T2.inject==='drawerMid' && c==='D' && k===1) opt.drawerMidAt='funnel-slide';
-        const res = await cycleOne(c, opt);
-        got += res.pulses;
-        if(res.pulses>1){ // 单周期多脉冲：立即转异常
-          state.phase='fault'; refreshUI();
-          log(`${c} 单周期记录 ${res.pulses} 个脉冲（超过 1 粒/周期）：立即转异常并停止；多余胶囊留在药盒`,'bad');
-          phoneNotify('出药异常（多粒/持续遮挡），已停止', true);
-          beep(660,0.3,3); flashStatusLight('#dc2626');
-          throw ABORT;
-        }
-        if(T2.inject==='connLoss' && c==='D' && k===1){
-          $('chipNet').textContent='链路：中断'; $('chipNet').classList.add('alert');
-          log('Wi-Fi 连接中断：本周期结果未获设备回报确认。未确认任务不会被自动重放。','bad');
-          $('btnReconnect').style.display='';
-          state.phase='connLost'; refreshUI();
-          throw ABORT;
-        }
-        if(opt.noDrop){
-          log(`${c} 第 ${k} 机械周期零脉冲（落粒等待超时，演示参数）：记录漏出，暂停常规送料并转核验，未执行周期记为待执行`,'warn');
-          break;
-        }
-        await sleep(CHANNEL_CLEAR_MS);
-        log(`${c} 通道清空确认（固定等待 ${CHANNEL_CLEAR_MS}ms，不等于已证实清空；以核验为准）`);
-        await checkpoint();
-      }
-      log(`${c} 路完成：光电累计 ${state.opto[c]}/${needVis}`);
-    }
-    /* 全部药路完成 → 视觉核验 */
-    $('chipRoute').textContent='药路：—（全部关闭）';
-    setTimeline('verify');
-    await verifyPhase();
-    setTimeline(state.phase==='awaitingPickup'?'wait':'end');
-  }catch(e){
-    if(e===ABORT){ log('流程中止（当前突发场景处理完毕或被重置）','warn'); }
-    else { console.error(e); log('流程异常中止：'+e.message,'bad'); }
-  }finally{
-    state.running=false;
-    gateL2Highlight('A', false, null);
-    refreshUI();
-  }
-}
-let stepWaiter=null;
-function checkpoint(){
-  if(!$('tStep').checked && !window.__tourStep) return Promise.resolve();
-  if(state.tourActive) return Promise.resolve();
-  subtitle('步进模式：点击「下一步」继续');
-  return new Promise(r=>{ stepWaiter=r; $('btnStep').disabled=false; refreshUI(); });
-}
-$('btnStep').addEventListener('click', ()=>{
-  if(stepWaiter){ const r=stepWaiter; stepWaiter=null; r(); $('btnStep').disabled=true; }
-  else if(window.__tourWait){ const r=window.__tourWait; window.__tourWait=null; r(); }
-});
-
-/* ---- 取药 ---- */
-function takeOne(){
-  if(!(state.phase==='awaitingPickup'||state.phase==='partial')) return;
-  if(state.drawerConfirmed===false) return;
-  const item = (()=>{ for(let i=state.tray.length-1;i>=0;i--){ if(!state.tray[i].stray) return state.tray.splice(i,1)[0]; } return null; })();
-  if(!item) return;
-  state.pickupStarted = true;
-  trayGroup.remove(item.mesh);
-  drawVisionPanel(false);
-  log(`模拟取走 1 粒（${item.cls} 类样片）→ 剩余 ${state.tray.length} 粒`);
-  if(state.tray.length>0){
-    state.phase='partial';
-    log(`仍有剩余（${state.tray.length} 粒）：不记录完成，继续提醒`,'warn');
-    phoneNotify(`已取走1粒，剩余${state.tray.length}粒待取`, true);
-    refreshUI();
-  } else completeTake();
-}
-function completeTake(){
-  state.phase='completed';
-  stopReminder();
-  const T=state.task;
-  log('托盘已清空 / 记录模拟取药事件（用户确认）——本页不声称已验证实际服药','ok');
-  phoneNotify('药盒已清空：记为用户确认取药（不宣称已验证服药）');
-  if(T){ setTimeline('done'); }
-  beep(1040,0.12,1);
-  refreshUI();
-}
-$('btnTake1').addEventListener('click', takeOne);
-$('btnTakeAll').addEventListener('click', ()=>{
-  if(!(state.phase==='awaitingPickup'||state.phase==='partial')) return;
-  const n = state.tray.length;
-  state.tray.forEach(t=>{ (t.mesh.parent||scene).remove(t.mesh); }); state.tray=[];
-  if(n>0){ state.pickupStarted=true; log(`全部取走 ${n} 粒样片`); drawVisionPanel(false); completeTake(); }
-});
-
-/* ---- 库存观察 ---- */
-function refreshInvTable(){
-  let html='<tr><th>药位</th><th>状态</th><th>最近检查</th></tr>';
-  CLS.forEach(c=>{
-    const s=state.inv[c];
-    const cls = s.level==='充足'?'ok':(s.level==='未知'?'mut':'bad');
-    html+=`<tr><td>${c}</td><td class="${cls}">${s.level}</td><td class="mut">${s.last}</td></tr>`;
-  });
-  $('invTable').innerHTML=html;
-}
-function invCheck(reason){
-  state.inv.A.seen=true; state.inv.A.last=fmtStamp();
-  let changed=[];
-  CLS.forEach(c=>{
-    if(c==='A') return;
-    if(state.inv[c].level!=='未知'){ state.inv[c].last=fmtStamp(); }
-  });
-  log(`库存检查（${reason}）：INV-01 当前正对 A 瓶 → ${state.inv.A.level}；其余药位视野待验证（扫描结构未定稿），显示未知`,'warn');
-  refreshInvTable();
-}
-$('btnInvCheck').addEventListener('click', ()=>invCheck('手动'));
-function setStockE(low){
-  if(low){
-    state.inv.E = {level:'低于阈值', seen:false, last:fmtStamp(), note:'模拟'};
-    setBottleStockVisual('E', 1);
-    log('库存报告链路：硬件感知（E 低于观察线）→ 服务器 → 手机上报');
-    phoneNotify('低库存：E 瓶低于观察线，请补充（图像分级判断，非精确粒数）', true);
-    beep(760,0.2,2);
-    $('btnRefillE').style.display='';
-    refreshInvTable();
-  } else {
-    state.inv.E={level:'充足', seen:false, last:fmtStamp()};
-    setBottleStockVisual('E', 5);
-    log('E 瓶补充到恢复正常水位：告警解除（状态变化才通知/解除，不重复提醒）','ok');
-    phoneNotify('E 瓶库存已恢复');
-    $('btnRefillE').style.display='none';
-    refreshInvTable();
-  }
-}
-$('btnRefillE').addEventListener('click', ()=>setStockE(false));
-
-/* 周期库存检查：仅在空闲、供料关闭、通道清空时 */
-function invLoop(){
-  if(!state.running && state.phase==='idle' && state.drawerOut===false){
-    invCheck('周期（60s 演示参数）');
-  }
-  sched(invLoop, INV_CHECK_MS);
-}
-sched(invLoop, INV_CHECK_MS);
-
-/* ---- 时间线 ---- */
-const TL_STEPS = [{k:'check',t:'预检查'},{k:'A',t:'A'},{k:'B',t:'B'},{k:'C',t:'C'},{k:'D',t:'D'},{k:'E',t:'E'},{k:'verify',t:'视觉核验'},{k:'wait',t:'等待取药/提醒'},{k:'done',t:'已清空'}];
-let tlState = {mode:null, cur:null, skip:[]};
-function setTimeline(cur, arg){
-  if(cur==='check'){ tlState={mode:'run', cur:'check', skip:[]}; }
-  if(cur==='skip') tlState.skip.push(arg);
-  if(cur==='disp') tlState.cur=arg;
-  if(cur==='verify') tlState.cur='verify';
-  if(cur==='wait') tlState.cur='wait';
-  if(cur==='done') tlState.cur='done';
-  if(cur==='end') { tlState.cur=null; }
-  renderTimeline();
-}
-function renderTimeline(){
-  const T=state.task;
-  let idx = 0; const keys = ['check','A','B','C','D','E','verify','wait','done'];
-  const curKey = tlState.cur==='disp'? null : tlState.cur;
-  const curI = tlState.cur? keys.indexOf(tlState.cur):-1;
-  $('tl').innerHTML = TL_STEPS.map(s=>{
-    const i = keys.indexOf(s.k);
-    let add='';
-    if(tlState.mode){
-      if(tlState.skip.includes(s.k)) add='skip';
-      else if(i<curI || s.k==='done'&&state.phase==='completed') add='done';
-      else if(i===curI) add='act';
-    }
-    return `<span class="tlc ${add}">${s.t}</span>`;
-  }).join('');
-}
-function resetTimeline(){ tlState={mode:null,cur:null,skip:[]}; renderTimeline(); }
-
-/* ---- 重置（清除旧计时器与动画，不自动重放） ---- */
-function resetSim(isScenarioStart){
-  if(state.running || state.phase!=='idle'){
-    if(!isScenarioStart) log('重置：清除本任务全部计时器与动画，重建初始模拟状态（真实设备上电需人工确认位置后才能开启新任务）','ok');
-  }
-  ++state.runToken;
-  clearAllTimers();
-  state.running=false; state.paused=false; stepWaiter=null; if(stepWaiter){} 
-  state.task=null; state.pickupStarted=false; state.phase='idle';
-  state.opto={A:0,B:0,C:0,D:0,E:0}; state.vision={A:0,B:0,C:0,D:0,E:0};
-  state.tray.forEach(t=>{ (t.mesh.parent||scene).remove(t.mesh); }); state.tray=[];
-  activeCapsules.slice().forEach(a=>{ scene.remove(a.mesh); });
-  activeCapsules.length=0;
-  CLS.forEach(c=>{
-    gates[c].a=90; gates[c].rotFrom=null; gates[c].carry=null; gates[c].l2.rotation.y = -RAD(90);
-    gateL2Highlight(c,false,null);
-    setBottleStockVisual(c, iDefaultStock(c));
-  });
-  trayZ=0; trayGroup.position.z=0; state.drawerOut=false;
-  state.drawerConfirmed=true;
-  stopReminder();
-  $('badge2').style.display='none';
-  $('chipNet').textContent='链路：正常'; $('chipNet').classList.remove('alert');
-  $('btnReconnect').style.display='none'; $('btnRefillE').style.display='none';
-  $('btnReturnDrawer').style.display='none'; $('btnConfirmDrawer').style.display='none';
-  state.inv={A:{level:'充足',seen:true,last:fmtStamp()}}; CLS.forEach(c=>{ if(c!=='A') state.inv[c]={level:'未知',seen:false,last:'—'}; });
-  subtitle(''); resetTimeline();
-  drawVisionPanel(false); refreshVecTable(); refreshInvTable(); refreshGateSolo();
-  if(state.gateSolo){} 
-  if(!isScenarioStart) state.gateSolo = null;
-  refreshGateSolo();
-  refreshUI();
-}
-$('btnReconnect').addEventListener('click', ()=>{
-  $('chipNet').textContent='链路：正常'; $('chipNet').classList.remove('alert');
-  $('btnReconnect').style.display='none';
-  log('连接已恢复：未确认的出药不会自动重放；本次任务作废，需重新下发确认（不产生重复出药）','ok');
-  phoneNotify('连接恢复；原任务未确认部分需重新下发');
-  state.phase='idle'; state.task=null; refreshUI();
-});
-
-/* ---- 场景调度（互斥；每次从明确初始状态运行） ---- */
-async function startScenario(key){
-  if(state.running){ log('已有场景在执行，已忽略（防重复出药）','warn'); return; }
-  resetSim(true);
-  switch(key){
-    case 'normal':       log('场景：正常配药（演示目标 A2 B1 C0 D1 E1）','ok'); await runTask(null); break;
-    case 'missA':        log('场景：A 第 2 粒一次释放未实际落粒（光电与视觉一致）→ 演示有限补发','warn'); await runTask('noDrop'); break;
-    case 'extraB':       log('场景：B 单周期记录 2 个脉冲 → 立即转异常并停止','warn'); await runTask('double'); break;
-    case 'partialTake':  await runTask(null); if(state.phase==='awaitingPickup'){ takeOne(); } break;
-    case 'timeout':      await runTask(null); break;
-    case 'elow':
-      if(state.running||state.phase!=='idle'){ log('库存场景需在空闲状态运行（请先重置）','warn'); break; }
-      log('场景：E 瓶低于阈值（模拟感知；扫描/镜头布置待验证）→ 硬件→服务器→手机上报','warn');
-      setStockE(true); break;
-    case 'conflictA':    await runTask('conflict'); break;
-    case 'wrongColor':   await runTask('wrongColor'); break;
-    case 'drawerMid':    log('场景：D 出料期间抽出药盒；在途胶囊继续显示并待人工核对；放回后需确认且不自动补齐','warn'); await runTask('drawerMid'); break;
-    case 'connLoss':     log('场景：任务执行中 Wi-Fi 中断；恢复后未确认任务不会重放','warn'); await runTask('connLoss'); break;
-  }
-}
-
-/* 视觉注入在 verifyPhase 前生效 */
-(function(){
-  const origVerify = verifyPhase;
-  const patched = async function(){
-    const T = state.task;
-    if(T && T.inject==='conflict'){
-      const vis={}; CLS.forEach(c=> vis[c]=state.tray.filter(t=>t.cls===c&&!t.stray).length);
-      vis['A'] = Math.max(0, vis['A']-1);  // 光电2，视觉1
-      state.vision = vis; refreshVecTable();
-      log('视觉核验（模拟）：A 光电 2 ≠ 视觉 1 → 可能遮挡或掉出分区','bad');
-      state.phase='fault'; refreshUI();
-      log('结果冲突，请核对：不自动补发、不自动清除','bad');
-      phoneNotify('光电与视觉数量冲突（A），请人工核对', true);
-      beep(660,0.25,3); flashStatusLight('#dc2626');
-      return;
-    }
-    return origVerify();
-  };
-  window.verifyPhase = patched; verifyPhase = patched;
-})();
-
-/* =============== 5. 界面渲染与事件 =============== */
-function setPauseBtn(){ $('btnPause').textContent = state.paused? '继续':'暂停'; }
-const PHASE_TEXT = {idle:'空闲', checking:'检查中…', dispensing:'配药中（A→E 串行）', verifying:'视觉核验（模拟）',
-  correcting:'有限补发中', awaitingPickup:'等待取药（每 300 秒提醒）', partial:'部分取走（仍有剩余，继续提醒）',
-  completed:'药盒已清空 / 用户已确认', fault:'异常停止 · 需人工处理', drawerOut:'药盒离位 · 已暂停新送料',
-  connLost:'连接中断 · 未确认任务不重放', awaitingDevice:'等待设备回报（实物未连接）'};
-function refreshUI(){
-  const ph = state.phase;
-  $('stateText').textContent = PHASE_TEXT[ph]||ph;
-  $('stateText').classList.toggle('alert', ['fault','drawerOut','connLoss'].includes(ph));
-  $('chipCmd').textContent = '指令：'+(state.task? '#'+state.task.id : '—');
-  const busy = state.running || state.tourActive;
-  document.querySelectorAll('[data-scen]').forEach(b=> b.disabled = busy || ph==='awaitingDevice');
-  $('btnSend').disabled = busy || ph==='awaitingDevice';
-  $('btnPause').disabled = !state.running && !state.tourActive;
-  $('btnStep').disabled = !stepWaiter;
-  setPauseBtn();
-  const canPick = (ph==='awaitingPickup'||ph==='partial') && !state.drawerOut;
-  $('btnTake1').disabled = !canPick; $('btnTakeAll').disabled = !canPick;
-  if(!state.drawerOut){ $('btnReturnDrawer').style.display='none'; $('btnConfirmDrawer').style.display='none'; }
-  renderTimeline();
-}
-function updateChipDevice(){
-  $('chipDevice').textContent = state.mode==='real' ? '设备：未连接' : '设备：演示模拟';
-  $('chipDevice').classList.toggle('alert', state.mode==='real');
-  $('realHint').style.display = state.mode==='real' ? '' : 'none';
-}
-function srvMsg(txt){
-  const d=document.createElement('div'); d.textContent=fmtClock()+'  '+txt;
-  $('cmdLog').appendChild(d); $('cmdLog').scrollTop=1e9;
-  while($('cmdLog').children.length>60) $('cmdLog').removeChild($('cmdLog').firstChild);
-}
-const __origPulse = pulseLine;
-pulseLine = function(id){
-  __origPulse(id);
-  srvMsg(id==='lnPhone' ? '手机 → 服务器：任务校验通过，生成 commandId'
-        : id==='lnSvr'  ? '服务器 → 设备：下发指令（Mock 适配层返回模拟确认）'
-        : '通信链路活动');
-};
-
-/* 模拟视觉画面（预设数据） */
-function drawVisionPanel(scanning){
-  const cv=$('visionCv'), ctx=cv.getContext('2d');
-  const W=cv.width, H=cv.height;
-  ctx.fillStyle='#fdffff'; ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='#c5d4d9'; for(let i=0;i<W;i+=30){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,H); ctx.globalAlpha=.25; ctx.stroke(); } ctx.globalAlpha=1;
-  ctx.beginPath(); ctx.arc(W/2, H/2+14, 68, 0, 7); ctx.strokeStyle='#8fa7ad'; ctx.stroke();
-  ctx.fillStyle='#5b6f79'; ctx.font='11px sans-serif';
-  ctx.fillText('CAM-01 药盘模拟俯视（预设数据 · 非实时AI）', 8, 14);
-  const items = state.tray.filter(t=>!t.stray);
-  items.forEach((t,i)=>{
-    const ang = i/Math.max(1,items.length)*Math.PI*2 + 0.7;
-    const rr = 22 + (i%3)*14;
-    const x = W/2 + Math.cos(ang)*rr, y = H/2+14 + Math.sin(ang)*rr*0.58;
-    ctx.save(); ctx.translate(x,y); ctx.rotate(ang*0.5);
-    ctx.fillStyle=CLS_COLOR[t.cls];
-    ctx.beginPath(); ctx.ellipse(0,0,12,5.5,0,0,7); ctx.fill();
-    ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.stroke();
-    if(scanning){ ctx.strokeStyle='#0d9488'; ctx.setLineDash([4,3]); ctx.strokeRect(-16,-10,32,20); ctx.setLineDash([]); }
-    ctx.fillStyle='#fff'; ctx.font='bold 10px sans-serif'; ctx.fillText(t.cls, -3, 3.5);
-    ctx.restore();
-  });
-  ctx.fillStyle='#39464e'; ctx.font='12px sans-serif';
-  ctx.fillText('清点  '+CLS.map(c=>`${c}:${items.filter(t=>t.cls===c).length}`).join('  '), 10, H-10);
-  if(scanning){ ctx.fillStyle='#b45309'; ctx.fillText('识别中…（置信状态：预设模拟值）', W-170, H-10); }
-  const stray = state.tray.filter(t=>t.stray);
-  if(stray.length){ ctx.fillStyle='#dc2626'; ctx.font='12px sans-serif'; ctx.fillText(`${stray.length} 粒落点异常 → 待人工核对`, W-190, 32); }
-}
-
-/* 采购状态表（数量待核算） */
-function buildBomTable(){
-  const rows = [
-    ['CTRL-01','ESP32-S3 主控（串行控制 5 路）','1 块','拟采购'],
-    ['DRV-01','驱动板（示意；原 5 舵机方案作废）','1 块 · 执行器数量按新结构重算','待核算'],
-    ['GATE-A…E','瓶底三层叠片材料','5 组','机构待验证'],
-    ['BIN-A…E','透明药瓶','5 个','拟采购'],
-    ['FUN-01','公共汇流漏斗','1 个','拟采购'],
-    ['CNT-01','落料计数对射（公共通道）','1 对（原 5 对方案作废）','待核算'],
-    ['TRAY-01','可抽取药盒','1 个','拟采购'],
-    ['SW-01','药盒在位开关','1 只','拟采购'],
-    ['CAM-01/INV-01','UVC USB 摄像头（USB 接机外电脑）','2 只','拟采购'],
-    ['PWR-01','5V 成品适配器（机箱外）','1 套','拟采购'],
-    ['ALM-01','蜂鸣器 + 状态灯','1 组','拟采购'],
-  ];
-  $('bomTable').innerHTML = '<tr><th>编号</th><th>部件</th><th>数量</th><th>状态</th></tr>'+
-    rows.map(r=>`<tr><td>${r[0]}</td><td style="text-align:left">${r[1]}</td><td>${r[2]}</td><td class="${r[3]==='拟采购'?'ok':'mut'}">${r[3]}</td></tr>`).join('');
-}
-
-/* ---- 事件绑定 ---- */
-document.querySelectorAll('[data-view]').forEach(b=> b.addEventListener('click', ()=>{ setView(b.dataset.view); }));
-document.querySelectorAll('[data-scen]').forEach(b=> b.addEventListener('click', ()=>{ startScenario(b.dataset.scen); }));
-document.querySelectorAll('.gsel').forEach(b=> b.addEventListener('click', ()=>{
-  const c=b.dataset.gsel;
-  state.gateSolo = (state.gateSolo===c)? null : c;
-  if(state.gateSolo && explodeT>0){ $('explodeSlider').value=0; explodeT=0; applyExplode(); }
-  refreshGateSolo();
-}));
-$('tTransparent').addEventListener('change', refreshShell);
-$('tSection').addEventListener('change', refreshShell);
-$('tCones').addEventListener('change', e=>{ cone01.visible = cone02.visible = e.target.checked; });
-$('tSlow').addEventListener('change', e=>{ state.slowMo = e.target.checked; });
-$('tRecording').addEventListener('change', e=>{
-  document.body.classList.toggle('recording', e.target.checked);
-  log(e.target.checked? '录屏布局：隐藏开发项，保留模型/字幕/计数与模拟标识——请用系统录屏工具录制':'退出录屏布局');
-});
-$('explodeSlider').addEventListener('input', ()=>{ applyExplode(); });
-$('btnAssemble').addEventListener('click', ()=>{
-  $('explodeSlider').value=0; applyExplode(); state.gateSolo=null; refreshGateSolo();
-  subtitle('');
-});
-$('btnSend').addEventListener('click', ()=>{
-  if(state.running||state.tourActive){ log('已忽略：已有任务/讲解在执行（防重复出药）','warn'); return; }
-  resetSim(true); runTask(null);
-});
-$('btnPause').addEventListener('click', ()=>{
-  if(!state.running && !state.tourActive) return;
-  state.paused = !state.paused; setPauseBtn();
-  log(state.paused? '已暂停（暂停/复位可随时接管）':'继续');
-  if(state.paused===false && state.running){ refreshUI(); }
-});
-$('btnReset').addEventListener('click', ()=>resetSim(false));
-$('btnSound').addEventListener('click', ()=>{
-  try{
-    state.audioCtx = state.audioCtx || new (window.AudioContext||window.webkitAudioContext)();
-    state.soundOn = true; $('btnSound').textContent='提示音已允许';
-    log('已启用提示音（浏览器音频需用户手势允许；静音时仍有可见提醒）','ok');
-  }catch(e){ log('音频初始化失败：将仅使用可见提醒','warn'); }
-});
-$('modeSel').addEventListener('change', e=>{
-  state.mode=e.target.value; updateChipDevice(); refreshUI();
-  if(state.mode==='real') log('切换实物模式：通信走独立适配层；未配置连接时显示“未连接”，不会静默回退为模拟成功','warn');
-  else log('切回演示模式：使用 Mock 适配层与固定可复现的模拟数据');
-});
-$('btnTour').addEventListener('click', runTour);
-
-/* ---- 自动讲解（录屏脚本，约 2-3 分钟） ---- */
-function tourWait(ms){
-  return new Promise(res=>{
-    let done=false;
-    window.__tourWait = ()=>{ if(done) return; done=true; res(); };
-    const t = setTimeout(()=>{ if(done) return; done=true; res(); }, ms);
-  });
-}
-async function runTour(){
-  if(state.tourActive){ log('自动讲解已在进行中','warn'); return; }
-  state.tourActive=true; $('btnTour').disabled=true;
-  resetSim(true);
-  const tk=++state.runToken;
-  const chk=()=>{ if(tk!==state.runToken) throw ABORT; };
-  try{
-    document.body.classList.add('recording'); $('tRecording').checked=true;
-    setView('iso');
-    subtitle('【自动讲解 1/9】整机外观：紧凑圆柱药桶，正面为取药盒，五个独立药位全部收在桶内');
-    await tourWait(6500); chk();
-    subtitle('【2/9】开盖俯视：A–E 五个独立小药仓，人工顺向装填同规格彩色演示胶囊');
-    setView('lidtop'); await tourWait(6500); chk();
-    subtitle('【3/9】单瓶接口拆解（GATE-A，同结构共 5 组）：L1 固定进料 / L2 定量隔离 / L3 固定出料；运动方案待样机验证');
-    state.gateSolo='A'; refreshGateSolo(); await tourWait(7000); chk();
-    state.gateSolo=null; refreshGateSolo(); setView('iso');
-    subtitle('【4/9】一个完整机械周期：接料 → 隔离 → 出料 → 复位；任意中间位置上下孔不会连续贯通');
-    await cycleOne('A'); chk(); await tourWait(1200);
-    resetSim(true); $('tTransparent').checked=false; refreshShell();
-    subtitle('【5/9】链路：手机设置数量 → 服务器校验并生成 commandId → 设备确认（同一时间只运行一路）');
-    await tourWait(6500); chk();
-    subtitle('【6/9】正常配药：A→E 串行执行，C 目标为 0 自动跳过');
-    await runTask(null); chk(); await tourWait(3500);
-    subtitle('【7/9】异常一：缺一粒且光电、视觉一致 → 仅一次有限补发并复核');
-    resetSim(true); await runTask('noDrop'); chk(); await tourWait(3000);
-    subtitle('【8/9】异常二：多一粒 → 单周期双脉冲，立即停止，多余胶囊留在盒内等待人工');
-    resetSim(true); await runTask('double'); chk(); await tourWait(3000);
-    subtitle('【9/9】部分取走不算完成：剩余持续提醒（真实 300 秒，演示加速 10 秒）；E 瓶低库存经服务器上报手机');
-    resetSim(true); await runTask(null); chk();
-    if(state.phase==='awaitingPickup') takeOne();
-    await tourWait(11000); chk();
-    resetSim(true); setStockE(true); await tourWait(5000); chk();
-    subtitle('总结：结构概念 · 模拟数据 · 尚未连接实物；单粒分离、仓底密封、整列防卡均待实物验证。本页交付录屏素材，不输出视频文件');
-    await tourWait(6000); chk();
-    log('自动讲解结束：如需视频，请在录屏布局下使用系统录屏工具录制本窗口','ok');
-  }catch(e){
-    if(e!==ABORT){ console.error(e); log('自动讲解异常终止','bad'); }
-    else log('自动讲解被重置中断','warn');
-  }finally{
-    state.tourActive=false; $('btnTour').disabled=false; subtitle('');
-  }
-}
-
-/* ---- 启动 ---- */
-$('loader').style.display='none';
-resize();
-animate();
-refreshShell(); updateChipDevice();
-refreshVecTable(); refreshInvTable(); renderTimeline(); drawVisionPanel(false); buildBomTable();
-setView('iso');
-log('三维引擎加载成功：本地固定版本 Three.js 0.170.0（libs/ 目录，离线可用，无外网依赖）','ok');
-log('结构自查：桶内 5 药瓶 + 5 组瓶底三层叠片 + 1 汇流漏斗 + 1 中央出口 + 1 对计数 + 1 药盒 + 2 摄像头；所有孔位为真实挖孔几何','ok');
-log('演示规则自查：默认 A2/B1/C0/D1/E1，C 跳过；目标 0 不动作；缺1且两路一致才补发1次；多粒/冲突立即停止；取药开始后永不自动补发','ok');
-log('提醒：真实间隔 300 秒；页面演示加速为 10 秒且全程标注。关闭页面后倒计时不会继续','ok');
-
-}catch(e){ showFallback(e); }
-}else{ /* 三维库加载失败：showFallback 已显示错误与 2D 备用示意 */ }
 </script>
 </body>
 </html>
